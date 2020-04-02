@@ -7,6 +7,8 @@
     "body-parser": "^1.15.1",
     "cookie-session": "^2.0.0-alpha.1",
     "express": "^4.13.4",
+    "express-handlebars": "^4.0.1",
+    "handlebars": "^4.7.5",
     "jade": "^1.11.0",
     "websocket": "^1.0.22",
     "ws": "^7.2.3"

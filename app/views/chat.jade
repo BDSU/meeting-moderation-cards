@@ -15,7 +15,7 @@ html
         button#whiteBtn(class="btn-color btn-color-white btn-color-unselected")
         button#allBtn(class="btn-color btn-color-all btn-color-unselected")
         script.
-            var socket = new WebSocket('ws://localhost:8181/', 'chat');
+            var socket = new WebSocket('ws://localhost:8080/', 'stimmung');
             socket.onopen = function () {
                 socket.send('{"type": "join", "name":"#{user}"}');
             }

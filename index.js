@@ -1,7 +1,12 @@
 var PORT = 8080;
 var express = require("express");
+var http = require("http");
+var handlebars = require("express-handlebars");
 
 var app = express();
+var server = http.Server(app);
+
+var path = require("path");
 
 var cookieSession = require("cookie-session");
 var bodyParser = require("body-parser");
@@ -15,11 +20,19 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use("/js", express.static(__dirname + "/js"));
 app.use("/css", express.static(__dirname + "/css"));
 
-app.set("views", __dirname + "/app/views");
-app.set("view engine", "jade");
+app.set("views", path.join(__dirname, "html"));
+//app.set("view engine", "jade");
+app.set("view engine", "hbs");
+app.engine(
+  "hbs",
+  handlebars({
+    extname: "hbs",
+    defaultLayout: false,
+  })
+);
 
 function checkAuth(req, res, next) {
-  if (!req.session.user) {
+  if (!req.session.name) {
     res.redirect("/");
   } else {
     next();
@@ -27,31 +40,33 @@ function checkAuth(req, res, next) {
 }
 
 app.get("/", function(req, res) {
-  res.render("login");
+  res.sendFile(path.join(__dirname, "html", "join.html"));
 });
 
 app.post("/login", function(req, res) {
-  var user = req.body.username,
-    pw = req.body.password;
+  var name = req.body.name;
+  console.log(req.body);
 
-  if (user === "u1" && pw === "test") {
-    req.session.user = "u1";
-  } else if (user === "u2" && pw === "test") {
-    req.session.user = "u2";
+  if (name === "u1" || name === "u2") {
+    req.session.name = name;
   }
 
-  res.redirect("/chat");
+  res.redirect("/stimmung");
 });
 
-app.get("/chat", checkAuth, function(req, res) {
-  res.render("chat", { user: req.session.user });
+app.get("/stimmung", checkAuth, function(req, res) {
+  res.render("stimmung", { name: req.session.name });
+});
+
+app.get("/test", (req, res) => {
+  res.sendFile(path.join(__dirname, "html", "stimmung.html"));
 });
 
 app.get("/logout", function(req, res) {
-  connections[req.session.user].close();
-  delete connections[req.session.user];
+  connections[req.session.name].close();
+  delete connections[req.session.name];
 
-  delete req.session.user;
+  delete req.session.name;
 
   var msg =
     '{"type": "join", "names": ["' +
@@ -66,23 +81,22 @@ app.get("/logout", function(req, res) {
   res.redirect("/");
 });
 
-app.listen(8080);
+server.listen(8080);
 
-var WSS = require('websocket').server,
-    http = require('http');
+var WSS = require("websocket").server; //,http = require('http');
 
-var server = http.createServer();
-server.listen(8181);
+//var server = http.createServer();
+//server.listen(8181);
 
 var wss = new WSS({
-    httpServer: server,
-    autoAcceptConnections: false
+  httpServer: server,
+  autoAcceptConnections: false
 });
 
 var connections = {};
 var cards = [];
 wss.on("request", function(request) {
-  var connection = request.accept("chat", request.origin);
+  var connection = request.accept("stimmung", request.origin);
 
   connection.on("message", function(message) {
     var name = "";
@@ -99,6 +113,7 @@ wss.on("request", function(request) {
     switch (data.type) {
       case "join":
         connections[data.name] = connection;
+        //console.log(request.cookies.filter(cookie => cookie.name === 'session'));
         var msg =
           '{"type": "join", "names": ["' +
           Object.keys(connections).join('","') +

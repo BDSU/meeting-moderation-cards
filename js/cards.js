@@ -1,69 +1,126 @@
 $(document).ready(() => {
-    var yellow = false;
-    var blue = false;
-    var green = false;
-    var red = false;
-    var white = false;
-    var all = false;
+  var socket = new WebSocket("ws://localhost:8080/", "stimmung");
+  socket.onopen = function() {
+    socket.send(
+      JSON.stringify({
+        type: "join",
+        name
+      })
+    );
+  };
+  socket.onmessage = function(msg) {
+    var data = JSON.parse(msg.data);
+    switch (data.type) {
+      case "msg":
+        var msg = $("<div>" + data.name + ": " + data.msg + "</div>");
+        $("#cards").append(msg);
+        break;
+      case "join":
+        $("#users").empty();
+        for (var i = 0; i < data.names.length; i++) {
+          var user = $("<div>" + data.names[i] + "</div>");
+          $("#users").append(user);
+        }
+        break;
+      case "raise":
+        renderCard(data);
+        break;
+      case "lower":
+        $(`#${data.name}${data.card}`).remove();
+        break;
+      case "all":
+        $("#cards").empty();
+        data.cards.forEach(card => {
+          renderCard(card);
+        });
+        break;
+      default:
+        $("#cards").append(msg.data);
+    }
+  };
+  function renderCard(data) {
+    let card = `<div id="${data.name}${data.card}" class="card-common card-${data.card}">${data.name}</div>`;
+    console.log(card);
+    $("#cards").append(card);
+  }
 
-    $('#yellowBtn').on('click', function(event) {
-        event.preventDefault();
-        socket.send(JSON.stringify({
-            type: yellow ? 'lower' : 'raise',
-            card: 'yellow',
-        }));
-        yellow = !yellow;
-        $(this).toggleClass('btn-color-unselected');
-        $(this).toggleClass('btn-color-selected');
-    });
-    $('#blueBtn').on('click', function(event) {
-        event.preventDefault();
-        socket.send(JSON.stringify({
-            type: blue ? 'lower' : 'raise',
-            card: 'blue',
-        }));
-        blue = !blue;
-        $(this).toggleClass('btn-color-unselected');
-        $(this).toggleClass('btn-color-selected');
-    });
-    $('#greenBtn').on('click', function(event) {
-        event.preventDefault();
-        socket.send(JSON.stringify({
-            type: green ? 'lower' : 'raise',
-            card: 'green',
-        }));
-        green = !green;
-        $(this).toggleClass('btn-color-unselected');
-        $(this).toggleClass('btn-color-selected');
-    });
-    $('#redBtn').on('click', function(event) {
-        event.preventDefault();
-        socket.send(JSON.stringify({
-            type: red ? 'lower' : 'raise',
-            card: 'red',
-        }));
-        red = !red;
-        $(this).toggleClass('btn-color-unselected');
-        $(this).toggleClass('btn-color-selected');
-    });
-    $('#whiteBtn').on('click', function(event) {
-        event.preventDefault();
-        socket.send(JSON.stringify({
-            type: white ? 'lower' : 'raise',
-            card: 'white',
-        }));
-        white = !white;
-        $(this).toggleClass('btn-color-unselected');
-        $(this).toggleClass('btn-color-selected');
-    });
-    $('#allBtn').on('click', function(event) {
-        event.preventDefault();
-        socket.send(JSON.stringify({
-            type: all ? 'lower' : 'raise',
-            card: 'all',
-        }));
-        all = !all;
-        $(this).toggleClass('btn-color-unselected');
-        $(this).toggleClass('btn-color-selected');
-    });
+  var yellow = false;
+  var blue = false;
+  var green = false;
+  var red = false;
+  var white = false;
+  var all = false;
+
+  $("#yellowBtn").on("click", function(event) {
+    event.preventDefault();
+    socket.send(
+      JSON.stringify({
+        type: yellow ? "lower" : "raise",
+        card: "yellow"
+      })
+    );
+    yellow = !yellow;
+    $(this).toggleClass("btn-color-unselected");
+    $(this).toggleClass("btn-color-selected");
+  });
+  $("#blueBtn").on("click", function(event) {
+    event.preventDefault();
+    socket.send(
+      JSON.stringify({
+        type: blue ? "lower" : "raise",
+        card: "blue"
+      })
+    );
+    blue = !blue;
+    $(this).toggleClass("btn-color-unselected");
+    $(this).toggleClass("btn-color-selected");
+  });
+  $("#greenBtn").on("click", function(event) {
+    event.preventDefault();
+    socket.send(
+      JSON.stringify({
+        type: green ? "lower" : "raise",
+        card: "green"
+      })
+    );
+    green = !green;
+    $(this).toggleClass("btn-color-unselected");
+    $(this).toggleClass("btn-color-selected");
+  });
+  $("#redBtn").on("click", function(event) {
+    event.preventDefault();
+    socket.send(
+      JSON.stringify({
+        type: red ? "lower" : "raise",
+        card: "red"
+      })
+    );
+    red = !red;
+    $(this).toggleClass("btn-color-unselected");
+    $(this).toggleClass("btn-color-selected");
+  });
+  $("#whiteBtn").on("click", function(event) {
+    event.preventDefault();
+    socket.send(
+      JSON.stringify({
+        type: white ? "lower" : "raise",
+        card: "white"
+      })
+    );
+    white = !white;
+    $(this).toggleClass("btn-color-unselected");
+    $(this).toggleClass("btn-color-selected");
+  });
+  $("#allBtn").on("click", function(event) {
+    event.preventDefault();
+    socket.send(
+      JSON.stringify({
+        type: all ? "lower" : "raise",
+        card: "all"
+      })
+    );
+    all = !all;
+    $(this).toggleClass("btn-color-unselected");
+    $(this).toggleClass("btn-color-selected");
+  });
 });
