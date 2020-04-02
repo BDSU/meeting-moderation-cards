@@ -1,0 +1,83 @@
+.card-container {
+  margin: 5px;
+}
+.card {
+  text-align: center;
+  margin: 10px;
+  border-radius: 4px;
+  border: 1px solid black;
+}
+
+.card-yellow {
+  background: yellow;
+  color: black;
+}
+
+.card-blue {
+  background: blue;
+  color: white;
+}
+
+.card-green {
+  background: green;
+  color: black;
+}
+
+.card-red {
+  background: red;
+  color: black;
+}
+
+.card-white {
+  background: white;
+  color: black;
+}
+
+.card-all {
+  background: linear-gradient(110deg, yellow 20%, blue 20%, blue 40%, green 40%, green 60%, red 60%, red 80%, white 80%, white 100%);
+  color: black;
+}
+
+.btn-color {
+    height: 90px;
+    width: 50px;
+    display: inline-block;
+    vertical-align: top;
+    border-radius: 2px;
+    margin: 5px;
+}
+
+.btn-color-unselected {
+    opacity: 0.6;
+    border: 1px solid gray;
+}
+
+.btn-color-selected {
+    opacity: 1;
+    border: 1px solid black;
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.6);
+}
+
+.btn-color-yellow {
+    background: yellow;
+}
+
+.btn-color-blue {
+    background: blue;
+}
+
+.btn-color-green {
+    background: green;
+}
+
+.btn-color-red {
+    background: red;
+}
+
+.btn-color-white {
+    background: white;
+}
+
+.btn-color-all {
+    background: linear-gradient(110deg, yellow 20%, blue 20%, blue 40%, green 40%, green 60%, red 60%, red 80%, white 80%, white 100%);
+}

@@ -1,0 +1,64 @@
+html
+    head
+        script(src="/js/jquery.js")
+        script(src="/js/cards.js")
+        link(href='/css/cards.css', rel='stylesheet')
+    body
+        div(style="width:500px; text-align:right;")
+            a(href="/logout") Logout
+        div#msgs(style="height:400px; width:400px; overflow: scroll; float:left;")
+        div#users(style="height:400px; width:100px; overflow: scroll;")
+        button#yellowBtn(class="btn-color btn-color-yellow btn-color-unselected")
+        button#blueBtn(class="btn-color btn-color-blue btn-color-unselected")
+        button#greenBtn(class="btn-color btn-color-green btn-color-unselected")
+        button#redBtn(class="btn-color btn-color-red btn-color-unselected")
+        button#whiteBtn(class="btn-color btn-color-white btn-color-unselected")
+        button#allBtn(class="btn-color btn-color-all btn-color-unselected")
+        script.
+            var socket = new WebSocket('ws://localhost:8181/', 'chat');
+            socket.onopen = function () {
+                socket.send('{"type": "join", "name":"#{user}"}');
+            }
+            $('#sendBtn').on('click', function (e) {
+                e.preventDefault();
+                var name = '#{user}',
+                msg = $('#msg').val();
+                socket.send('{"type": "msg", "msg": "' + msg + '"}');
+                $('#msg').val('');
+            });
+            socket.onmessage = function (msg) {
+                var data = JSON.parse(msg.data);
+                switch (data.type) {
+                    case 'msg':
+                        var msg = $('<div>' + data.name + ': ' + data.msg +
+                                '</div>');
+                        $('#msgs').append(msg);
+                        break;
+                    case 'join':
+                        $('#users').empty();
+                        for (var i = 0; i < data.names.length; i++) {
+                            var user = $('<div>' + data.names[i] + '</div>');
+                            $('#users').append(user);
+                        }
+                        break;
+                    case 'raise':
+                        renderCard(data);
+                        break;
+                    case 'lower':
+                        $(`#${data.name}${data.card}`).remove();
+                        break;
+                    case 'all':
+                        $('#msgs').empty();
+                        data.cards.forEach((card) => {
+                            renderCard(card);
+                        });
+                        break;
+                    default: 
+                        $('#msgs').append(msg.data);
+                }
+            };
+            function renderCard(data) {
+                        let card = `<div id="${data.name}${data.card}" class="card card-${data.card}">${data.name}</div>`;
+                        console.log(card);
+                        $('#msgs').append(card);
+            }

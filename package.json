@@ -1,0 +1,14 @@
+{
+  "name": "webchat",
+  "version": "1.0.0",
+  "description": "A realtime chat application in node.js",
+  "main": "index.js",
+  "dependencies": {
+    "body-parser": "^1.15.1",
+    "cookie-session": "^2.0.0-alpha.1",
+    "express": "^4.13.4",
+    "jade": "^1.11.0",
+    "websocket": "^1.0.22",
+    "ws": "^7.2.3"
+  }
+}
