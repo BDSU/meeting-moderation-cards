@@ -1,5 +1,6 @@
 $(document).ready(() => {
-  var socket = new WebSocket("ws://localhost:8080/", "stimmung");
+let wsUrl = 'ws://'+location.hostname+(location.port ? ':'+location.port: '');
+  var socket = new WebSocket(wsUrl, "stimmung"); // "ws://localhost:8080/"
   socket.onopen = function() {
     socket.send(
       JSON.stringify({
@@ -26,7 +27,7 @@ $(document).ready(() => {
         renderCard(data);
         break;
       case "lower":
-        $(`#${data.name}${data.card}`).remove();
+        $(`#${data.id}${data.card}`).remove();
         break;
       case "all":
         $("#cards").empty();
@@ -38,9 +39,14 @@ $(document).ready(() => {
         $("#cards").append(msg.data);
     }
   };
+
+  socket.onclose = function(msg) {
+    $("#cards").empty();
+    $("#cards").append('<div>Disconnected! Go back to <a href="/">join screen</a></div>');
+  }
+ 
   function renderCard(data) {
-    let card = `<div id="${data.name}${data.card}" class="card-common card-${data.card}">${data.name}</div>`;
-    console.log(card);
+    let card = `<div id="${data.id}${data.card}" class="card-common card-${data.card}">${data.name}</div>`;
     $("#cards").append(card);
   }
 

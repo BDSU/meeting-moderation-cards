@@ -42,7 +42,7 @@
   <body class="text-center">
     <div class="container">
       <div class="row">
-        <form class="form-signin" id="accForm" action="/login" method="POST">
+        <form class="form-signin" id="accForm" action="/stimmung" method="POST">
           <label for="name" class="sr-only">Anzeigename</label>
           <input
             type="text"
@@ -50,7 +50,8 @@
             name="name"
             class="form-control"
             placeholder="Anzeigename"
-            required=""
+            required
+            pattern="[A-Za-zÄÖÜäöü \.]{3,}"
           />
           <br />
           <button class="btn btn-lg btn-primary btn-block" type="submit">

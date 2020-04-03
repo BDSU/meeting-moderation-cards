@@ -27,12 +27,12 @@ app.engine(
   "hbs",
   handlebars({
     extname: "hbs",
-    defaultLayout: false,
+    defaultLayout: false
   })
 );
 
 function checkAuth(req, res, next) {
-  if (!req.session.name) {
+  if (!req.body.name) {
     res.redirect("/");
   } else {
     next();
@@ -43,29 +43,13 @@ app.get("/", function(req, res) {
   res.sendFile(path.join(__dirname, "html", "join.html"));
 });
 
-app.post("/login", function(req, res) {
-  var name = req.body.name;
-  console.log(req.body);
-
-  if (name === "u1" || name === "u2") {
-    req.session.name = name;
-  }
-
-  res.redirect("/stimmung");
-});
-
-app.get("/stimmung", checkAuth, function(req, res) {
-  res.render("stimmung", { name: req.session.name });
-});
-
-app.get("/test", (req, res) => {
-  res.sendFile(path.join(__dirname, "html", "stimmung.html"));
+app.post("/stimmung", checkAuth, function(req, res) {
+  res.render("stimmung", { name: req.body.name });
 });
 
 app.get("/logout", function(req, res) {
   connections[req.session.name].close();
   delete connections[req.session.name];
-
   delete req.session.name;
 
   var msg =
@@ -83,40 +67,44 @@ app.get("/logout", function(req, res) {
 
 server.listen(8080);
 
-var WSS = require("websocket").server; //,http = require('http');
-
-//var server = http.createServer();
-//server.listen(8181);
+var WSS = require("websocket").server;
 
 var wss = new WSS({
   httpServer: server,
   autoAcceptConnections: false
 });
 
-var connections = {};
+var connections = []; // {name, connection}
 var cards = [];
 wss.on("request", function(request) {
   var connection = request.accept("stimmung", request.origin);
 
   connection.on("message", function(message) {
     var name = "";
+    var id = "";
 
-    for (var key in connections) {
-      if (connection === connections[key]) {
-        name = key;
-      }
-    }
+    connections
+      .filter(item => item.connection == connection)
+      .map(item => {
+        name = item.name;
+        id = item.id;
+      });
 
     var data = JSON.parse(message.utf8Data);
     console.log(`Inbound: ${message.utf8Data}`);
+    let card = undefined;
 
     switch (data.type) {
       case "join":
-        connections[data.name] = connection;
-        //console.log(request.cookies.filter(cookie => cookie.name === 'session'));
+        do {
+          id = generateId();
+        } while (connections.filter(item => item.id == id).length > 0);
+
+        connections.push({ name: data.name, connection, id });
+
         var msg =
           '{"type": "join", "names": ["' +
-          Object.keys(connections).join('","') +
+          connections.map(item => item.name).join('","') +
           '"]}';
         connection.send(
           JSON.stringify({
@@ -130,57 +118,68 @@ wss.on("request", function(request) {
           '{"type": "msg", "name": "' + name + '", "msg":"' + data.msg + '"}';
         break;
       case "raise":
-        var msg = JSON.stringify({
+        card = {
           type: data.type,
           card: data.card,
+          id,
           name
-        });
-        cards.push({ name, card: data.card });
+        };
+        var msg = JSON.stringify(card);
+        cards.push(card);
         break;
       case "lower":
-        var msg = JSON.stringify({
+        card = {
           type: data.type,
           card: data.card,
-          name: name
-        });
+          id,
+          name
+        };
+        var msg = JSON.stringify(card);
         cards = cards.filter(
-          item => !(item.name === name && item.card === data.card)
+          item => !(item.id === id && item.card === data.card)
         );
         break;
     }
 
     console.log(cards);
+    console.log(`Outbound: ${msg}`);
 
-    for (var key in connections) {
-      if (connections[key] && connections[key].send) {
-        connections[key].send(msg);
+    connections.map(item => {
+      if (item.connection && item.connection.send) {
+        item.connection.send(msg);
       }
-    }
+    });
   });
 
   connection.on("close", function(message) {
     var name = "";
-
-    for (var key in connections) {
-      if (connection === connections[key]) {
-        name = key;
-      }
-    }
+    connections.filter(item => item.connection == connection).map(item => (name = item.name));
 
     console.log(`Closing connection for ${name}`);
 
     cards = cards.filter(item => item.name !== name);
 
-    for (var key in connections) {
-      if (connections[key] && connections[key].send) {
-        connections[key].send(
+    connections.map(item => {
+      if (item.connection && item.connection.send) {
+        item.connection.send(
           JSON.stringify({
             type: "all",
             cards
           })
         );
       }
-    }
+    });
   });
 });
-//server.listen(PORT);
+
+var ALPHABET = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+
+var ID_LENGTH = 8;
+
+var generateId = function() {
+  var rtn = "";
+  for (var i = 0; i < ID_LENGTH; i++) {
+    rtn += ALPHABET.charAt(Math.floor(Math.random() * ALPHABET.length));
+  }
+  return rtn;
+};
