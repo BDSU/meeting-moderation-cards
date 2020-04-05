@@ -8,6 +8,9 @@ var server = http.Server(app);
 
 var path = require("path");
 
+var morgan = require('morgan');
+app.use(morgan('common'));
+
 var bodyParser = require("body-parser");
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use("/js", express.static(__dirname + "/js"));

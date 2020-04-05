@@ -15,6 +15,7 @@
     "body-parser": "^1.15.1",
     "express": "^4.13.4",
     "express-handlebars": "^4.0.1",
+    "morgan": "^1.10.0",
     "websocket": "^1.0.22"
   },
   "license": "GPL-3.0-or-later"
