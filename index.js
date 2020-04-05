@@ -8,20 +8,12 @@ var server = http.Server(app);
 
 var path = require("path");
 
-var cookieSession = require("cookie-session");
 var bodyParser = require("body-parser");
-app.use(
-  cookieSession({
-    name: "session",
-    keys: ["key1", "key2"]
-  })
-);
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use("/js", express.static(__dirname + "/js"));
 app.use("/css", express.static(__dirname + "/css"));
 
 app.set("views", path.join(__dirname, "html"));
-//app.set("view engine", "jade");
 app.set("view engine", "hbs");
 app.engine(
   "hbs",
@@ -47,25 +39,9 @@ app.post("/stimmung", checkAuth, function(req, res) {
   res.render("stimmung", { name: req.body.name });
 });
 
-app.get("/logout", function(req, res) {
-  connections[req.session.name].close();
-  delete connections[req.session.name];
-  delete req.session.name;
-
-  var msg =
-    '{"type": "join", "names": ["' +
-    Object.keys(connections).join('","') +
-    '"]}';
-
-  for (var key in connections) {
-    if (connections[key] && connections[key].send) {
-      connections[key].send(msg);
-    }
-  }
-  res.redirect("/");
+server.listen(PORT, () => {
+  console.log(`Server listening on port ${PORT}`);
 });
-
-server.listen(8080);
 
 var WSS = require("websocket").server;
 
@@ -91,7 +67,7 @@ wss.on("request", function(request) {
       });
 
     var data = JSON.parse(message.utf8Data);
-    console.log(`Inbound: ${message.utf8Data}`);
+    // console.log(`Inbound: ${message.utf8Data}`);
     let card = undefined;
 
     switch (data.type) {
@@ -141,8 +117,8 @@ wss.on("request", function(request) {
         break;
     }
 
-    console.log(cards);
-    console.log(`Outbound: ${msg}`);
+    // console.log(cards);
+    // console.log(`Outbound: ${msg}`);
 
     connections.map(item => {
       if (item.connection && item.connection.send) {
@@ -154,8 +130,6 @@ wss.on("request", function(request) {
   connection.on("close", function(message) {
     var name = "";
     connections.filter(item => item.connection == connection).map(item => (name = item.name));
-
-    console.log(`Closing connection for ${name}`);
 
     cards = cards.filter(item => item.name !== name);
 

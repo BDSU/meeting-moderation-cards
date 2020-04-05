@@ -1,16 +1,21 @@
 {
-  "name": "webchat",
+  "name": "stimmungskarten",
   "version": "1.0.0",
-  "description": "A realtime chat application in node.js",
+  "author": "Mikel Muennekhoff <mikel.muennekhoff@via-ev.de> (https://via-ev.de)",
+  "description": "A realtime application for using colored cards in online meetings",
   "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mikel-jason/stimmungskarten.git"
+  },
+  "scripts": {
+    "start": "node index.js"
+  },
   "dependencies": {
     "body-parser": "^1.15.1",
-    "cookie-session": "^2.0.0-alpha.1",
     "express": "^4.13.4",
     "express-handlebars": "^4.0.1",
-    "handlebars": "^4.7.5",
-    "jade": "^1.11.0",
-    "websocket": "^1.0.22",
-    "ws": "^7.2.3"
-  }
+    "websocket": "^1.0.22"
+  },
+  "license": "GPL-3.0-or-later"
 }

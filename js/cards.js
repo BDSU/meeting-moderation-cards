@@ -60,7 +60,6 @@ $(document).ready(() => {
   }
 
   function countCards() {
-    console.log("Counting");
     ["yellow", "blue", "green", "red", "white", "all"].forEach((color) => {
       $(`#count-${color}`).text($(`#cards .card-${color}`).length);
     });
