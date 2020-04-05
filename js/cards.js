@@ -47,6 +47,7 @@ $(document).ready(() => {
   };
 
   socket.onclose = function (msg) {
+    $("#counts").empty();
     $("#cards").empty();
     $("#cards").append(
       '<div>Disconnected! Go back to <a href="/">join screen</a></div>'
