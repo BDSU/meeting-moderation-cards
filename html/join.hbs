@@ -5,10 +5,10 @@
       name="viewport"
       content="width=device-width, initial-scale=1, shrink-to-fit=no"
     />
-    <meta name="description" content="" />
-    <meta name="author" content="VIA Studentische Unternehmensberatung e.V." />
+    <meta name="description" content="{{html_description}}" />
+    <meta name="author" content="{{html_author}}" />
     <meta name="generator" content="Jekyll v3.8.5" />
-    <title>VIA.Stimmung</title>
+    <title>{{html_title}}</title>
 
     <script src="/js/jquery-3.4.1.min.js"></script>
 
@@ -51,7 +51,7 @@
             class="form-control"
             placeholder="Anzeigename"
             required
-            pattern="[A-Za-zÄÖÜäöü \.]{3,}"
+            pattern="{{name_pattern}}"
           />
           <br />
           <button class="btn btn-lg btn-primary btn-block" type="submit">
