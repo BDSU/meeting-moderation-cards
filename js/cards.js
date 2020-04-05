@@ -1,15 +1,18 @@
 $(document).ready(() => {
-let wsUrl = 'ws://'+location.hostname+(location.port ? ':'+location.port: '');
+  let wsUrl =
+    (location.protocol == "https:" ? "wss://" : "ws://") +
+    location.hostname +
+    (location.port ? ":" + location.port : "");
   var socket = new WebSocket(wsUrl, "stimmung"); // "ws://localhost:8080/"
-  socket.onopen = function() {
+  socket.onopen = function () {
     socket.send(
       JSON.stringify({
         type: "join",
-        name: $('#displayname').text()
+        name: $("#displayname").text(),
       })
     );
   };
-  socket.onmessage = function(msg) {
+  socket.onmessage = function (msg) {
     var data = JSON.parse(msg.data);
     switch (data.type) {
       case "msg":
@@ -33,7 +36,7 @@ let wsUrl = 'ws://'+location.hostname+(location.port ? ':'+location.port: '');
         break;
       case "all":
         $("#cards").empty();
-        data.cards.forEach(card => {
+        data.cards.forEach((card) => {
           renderCard(card);
         });
         countCards();
@@ -43,21 +46,23 @@ let wsUrl = 'ws://'+location.hostname+(location.port ? ':'+location.port: '');
     }
   };
 
-  socket.onclose = function(msg) {
+  socket.onclose = function (msg) {
     $("#cards").empty();
-    $("#cards").append('<div>Disconnected! Go back to <a href="/">join screen</a></div>');
-  }
- 
+    $("#cards").append(
+      '<div>Disconnected! Go back to <a href="/">join screen</a></div>'
+    );
+  };
+
   function renderCard(data) {
     let card = `<div id="${data.id}${data.card}" class="card-common card-${data.card}">${data.name}</div>`;
     $("#cards").append(card);
   }
 
   function countCards() {
-    console.log('Counting');
-    ['yellow', 'blue', 'green', 'red', 'white', 'all'].forEach((color) => {
+    console.log("Counting");
+    ["yellow", "blue", "green", "red", "white", "all"].forEach((color) => {
       $(`#count-${color}`).text($(`#cards .card-${color}`).length);
-    })
+    });
   }
 
   var yellow = false;
@@ -67,72 +72,72 @@ let wsUrl = 'ws://'+location.hostname+(location.port ? ':'+location.port: '');
   var white = false;
   var all = false;
 
-  $("#yellowBtn").on("click", function(event) {
+  $("#yellowBtn").on("click", function (event) {
     event.preventDefault();
     socket.send(
       JSON.stringify({
         type: yellow ? "lower" : "raise",
-        card: "yellow"
+        card: "yellow",
       })
     );
     yellow = !yellow;
     $(this).toggleClass("btn-color-unselected");
     $(this).toggleClass("btn-color-selected");
   });
-  $("#blueBtn").on("click", function(event) {
+  $("#blueBtn").on("click", function (event) {
     event.preventDefault();
     socket.send(
       JSON.stringify({
         type: blue ? "lower" : "raise",
-        card: "blue"
+        card: "blue",
       })
     );
     blue = !blue;
     $(this).toggleClass("btn-color-unselected");
     $(this).toggleClass("btn-color-selected");
   });
-  $("#greenBtn").on("click", function(event) {
+  $("#greenBtn").on("click", function (event) {
     event.preventDefault();
     socket.send(
       JSON.stringify({
         type: green ? "lower" : "raise",
-        card: "green"
+        card: "green",
       })
     );
     green = !green;
     $(this).toggleClass("btn-color-unselected");
     $(this).toggleClass("btn-color-selected");
   });
-  $("#redBtn").on("click", function(event) {
+  $("#redBtn").on("click", function (event) {
     event.preventDefault();
     socket.send(
       JSON.stringify({
         type: red ? "lower" : "raise",
-        card: "red"
+        card: "red",
       })
     );
     red = !red;
     $(this).toggleClass("btn-color-unselected");
     $(this).toggleClass("btn-color-selected");
   });
-  $("#whiteBtn").on("click", function(event) {
+  $("#whiteBtn").on("click", function (event) {
     event.preventDefault();
     socket.send(
       JSON.stringify({
         type: white ? "lower" : "raise",
-        card: "white"
+        card: "white",
       })
     );
     white = !white;
     $(this).toggleClass("btn-color-unselected");
     $(this).toggleClass("btn-color-selected");
   });
-  $("#allBtn").on("click", function(event) {
+  $("#allBtn").on("click", function (event) {
     event.preventDefault();
     socket.send(
       JSON.stringify({
         type: all ? "lower" : "raise",
-        card: "all"
+        card: "all",
       })
     );
     all = !all;
