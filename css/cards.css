@@ -85,3 +85,8 @@
 .btn-color-all {
     background: linear-gradient(110deg, yellow 20%, blue 20%, blue 40%, green 40%, green 60%, red 60%, red 80%, white 80%, white 100%);
 }
+
+#counts {
+  width: 100%;
+  text-align: center;
+}

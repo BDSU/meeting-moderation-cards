@@ -25,15 +25,18 @@ let wsUrl = 'ws://'+location.hostname+(location.port ? ':'+location.port: '');
         break;
       case "raise":
         renderCard(data);
+        countCards();
         break;
       case "lower":
         $(`#${data.id}${data.card}`).remove();
+        countCards();
         break;
       case "all":
         $("#cards").empty();
         data.cards.forEach(card => {
           renderCard(card);
         });
+        countCards();
         break;
       default:
         $("#cards").append(msg.data);
@@ -48,6 +51,13 @@ let wsUrl = 'ws://'+location.hostname+(location.port ? ':'+location.port: '');
   function renderCard(data) {
     let card = `<div id="${data.id}${data.card}" class="card-common card-${data.card}">${data.name}</div>`;
     $("#cards").append(card);
+  }
+
+  function countCards() {
+    console.log('Counting');
+    ['yellow', 'blue', 'green', 'red', 'white', 'all'].forEach((color) => {
+      $(`#count-${color}`).text($(`#cards .card-${color}`).length);
+    })
   }
 
   var yellow = false;
