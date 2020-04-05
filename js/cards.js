@@ -5,7 +5,7 @@ let wsUrl = 'ws://'+location.hostname+(location.port ? ':'+location.port: '');
     socket.send(
       JSON.stringify({
         type: "join",
-        name
+        name: $('#displayname').text()
       })
     );
   };
