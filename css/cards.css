@@ -90,3 +90,15 @@
   width: 100%;
   text-align: center;
 }
+
+.reset-show {
+  width: 100%;
+}
+
+.reset-hide {
+  visibility: hidden;
+}
+
+#resetBtn {
+  width: 100%;
+}

@@ -136,6 +136,9 @@ wss.on("request", function (request) {
           (item) => !(item.id === id && item.card === data.card)
         );
         break;
+      case "reset":
+        cards = [];
+        var msg = JSON.stringify({ type: "reset" });
     }
 
     // console.log(cards);

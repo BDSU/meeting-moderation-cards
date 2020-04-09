@@ -41,6 +41,11 @@ $(document).ready(() => {
         });
         countCards();
         break;
+      case "reset":
+        $("#cards").empty();
+        resetOwnCards();
+        countCards();
+        break;
       default:
         $("#cards").append(msg.data);
     }
@@ -71,6 +76,19 @@ $(document).ready(() => {
   var red = false;
   var white = false;
   var all = false;
+
+  function resetOwnCards() {
+    ["yellow", "blue", "green", "red", "white", "all"].forEach((color) => {
+      $(`#${color}Btn`).addClass("btn-color-unselected");
+      $(`#${color}Btn`).removeClass("btn-color-selected");
+    });
+    yellow = false;
+    blue = false;
+    green = false;
+    red = false;
+    white = false;
+    all = false;
+  }
 
   $("#yellowBtn").on("click", function (event) {
     event.preventDefault();
@@ -143,5 +161,23 @@ $(document).ready(() => {
     all = !all;
     $(this).toggleClass("btn-color-unselected");
     $(this).toggleClass("btn-color-selected");
+  });
+  $("#resetBtn").on("click", function (event) {
+    event.preventDefault();
+    socket.send(
+      JSON.stringify({
+        type: "reset",
+      })
+    );
+    $("#cards").empty();
+    resetOwnCards();
+    countCards();
+  });
+
+  document.body.addEventListener("keypress", (event) => {
+    if (event.key && event.key === "R") {
+      $('#resetRow').toggleClass('reset-show');
+      $('#resetRow').toggleClass('reset-hide');
+    }
   });
 });
