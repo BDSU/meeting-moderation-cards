@@ -69,7 +69,7 @@ $(document).ready(() => {
     $("#cards").empty();
     $("#col-users").remove();
     $("#cards").append(
-      '<div>Disconnected! Go back to <a href="/">join screen</a></div>'
+      '<div class="disconnected">Disconnected! Go back to <a href="/">join screen</a></div>'
     );
   };
 

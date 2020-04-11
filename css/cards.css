@@ -1,6 +1,6 @@
 #cards {
   width: 100%;
-  height: 60vh;
+  height: calc(90vh - 40px - 30px - 90px);
   overflow-y: auto;
 }
 
@@ -59,7 +59,7 @@
   display: inline-block;
   vertical-align: top;
   border-radius: 2px;
-  margin: 5px;
+  margin-right: 5px;
 }
 
 .btn-color-unselected {
@@ -111,6 +111,28 @@
 #counts {
   width: 100%;
   text-align: center;
+  padding-bottom: 20px;
+}
+
+#counts > p {
+  height: 20px;
+  margin: 0;
+}
+
+#displayAsRow > p {
+  margin: 5px 10px;
+  height: 20px;
+}
+
+#cardBtns {
+  margin-left: 10px;
+}
+
+#resetDiv {
+  margin-left: 10px;
+  margin-right: 10px;
+  margin-top: 5px;
+  width: 100%;
 }
 
 .reset-hide {
@@ -119,6 +141,8 @@
 
 #resetBtn {
   width: 100%;
+  padding: 0;
+  height: 2em;
 }
 
 #col-users {
@@ -132,6 +156,11 @@
   }
 }
 
+#users {
+  height: calc(90vh - 40px - 30px - 90px);
+  overflow-y: auto;
+}
+
 .user {
   height: 1.5em;
 }
@@ -139,4 +168,8 @@
 .kickBtn {
   color: var(--danger)!important;
   margin-left: 5px;
+}
+
+.disconnected {
+  margin-top: 20px;
 }
