@@ -55,6 +55,9 @@ $(document).ready(() => {
         resetOwnCards();
         countCards();
         break;
+      case "connected":
+        renderUsers(data);
+        break;
       default:
         $("#cards").append(msg.data);
     }
@@ -71,6 +74,24 @@ $(document).ready(() => {
   function renderCard(data) {
     let card = `<div id="${data.id}${data.card}" class="card-common card-${data.card}">${data.name}</div>`;
     $("#cards").append(card);
+  }
+
+  function compareUsers(a, b) {
+    if (a.name.localeCompare(b.name) != 0) {
+      return a.name.localeCompare(b.name);
+    } else {
+      return a.id.localeCompare(b.id);
+    }
+  }
+
+  function renderUsers(data) {
+    let users = data.connected.sort(compareUsers);
+    $("#users").empty();
+    users.forEach((user) => {
+      $("#users").append(
+        `<div class='user' id='${user.id}user'>${user.name}</div>`
+      );
+    });
   }
 
   function countCards() {

@@ -102,11 +102,12 @@ wss.on("request", function (request) {
         } while (connections.filter((item) => item.id == id).length > 0);
 
         connections.push({ name: data.name, connection, id });
-
-        var msg =
-          '{"type": "join", "names": ["' +
-          connections.map((item) => item.name).join('","') +
-          '"]}';
+        var msg = JSON.stringify({
+          type: "connected",
+          connected: connections.map((item) => {
+            return { name: item.name, id: item.id };
+          }),
+        });
         connection.send(
           JSON.stringify({
             type: "all",
@@ -157,10 +158,18 @@ wss.on("request", function (request) {
 
   connection.on("close", function (message) {
     var name = "";
+    var id = "";
+
     connections
       .filter((item) => item.connection == connection)
-      .map((item) => (name = item.name));
+      .map((item) => {
+        name = item.name;
+        id = item.id;
+      });
 
+    connections = connections.filter(
+      (item) => item.connection != connection && item.id != id
+    );
     cards = cards.filter((item) => item.name !== name);
 
     connections.map((item) => {
@@ -169,6 +178,14 @@ wss.on("request", function (request) {
           JSON.stringify({
             type: "all",
             cards,
+          })
+        );
+        item.connection.send(
+          JSON.stringify({
+            type: "connected",
+            connected: connections.map((item) => {
+              return { name: item.name, id: item.id };
+            }),
           })
         );
       }

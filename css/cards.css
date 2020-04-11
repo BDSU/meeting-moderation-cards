@@ -124,3 +124,14 @@
 #resetBtn {
   width: 100%;
 }
+
+#col-users {
+  border-left: 1px solid #333;
+  max-width: 250px;
+}
+
+@media (max-width: 500px) {
+  #col-users {
+    display: none;
+  }
+}
