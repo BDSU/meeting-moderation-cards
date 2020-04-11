@@ -144,16 +144,23 @@ wss.on("request", function (request) {
       case "reset":
         cards = [];
         var msg = JSON.stringify({ type: "reset" });
+        break;
+      case "kick":
+        let kickconnection = connections.filter((conn) => conn.id == data.id)[0]
+          .connection;
+        kickconnection.close();
+        break;
     }
 
     // console.log(cards);
     // console.log(`Outbound: ${msg}`);
-
-    connections.map((item) => {
-      if (item.connection && item.connection.send) {
-        item.connection.send(msg);
-      }
-    });
+    if (msg) {
+      connections.map((item) => {
+        if (item.connection && item.connection.send) {
+          item.connection.send(msg);
+        }
+      });
+    }
   });
 
   connection.on("close", function (message) {

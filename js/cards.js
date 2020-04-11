@@ -64,8 +64,10 @@ $(document).ready(() => {
   };
 
   socket.onclose = function (msg) {
-    $("#counts").empty();
+    resetOwnCards();
+    $("#counts").remove();
     $("#cards").empty();
+    $("#col-users").remove();
     $("#cards").append(
       '<div>Disconnected! Go back to <a href="/">join screen</a></div>'
     );
@@ -89,9 +91,24 @@ $(document).ready(() => {
     $("#users").empty();
     users.forEach((user) => {
       $("#users").append(
-        `<div class='user' id='${user.id}user'>${user.name}</div>`
+        `<div class='user' id='${user.id}'>${user.name}<span><a class='kickBtn reset-hide'>X</a></span></div>`
       );
     });
+
+    $('#users .kickBtn').each(function() {
+      $(this).on('click', function() {
+        socket.send(JSON.stringify({
+          type: "kick",
+          id: $(this).closest('.user').attr('id'),
+        }));
+      });
+    });
+
+    if(!$('#resetRow').hasClass('reset-hide')) {
+      $('.kickBtn').each(function () {
+        $(this).toggleClass('reset-hide');
+      });
+    }
   }
 
   function countCards() {
@@ -137,8 +154,12 @@ $(document).ready(() => {
 
   document.body.addEventListener("keypress", (event) => {
     if (event.key && event.key === "R") {
-      $('#resetRow').toggleClass('reset-show');
-      $('#resetRow').toggleClass('reset-hide');
+      $("#resetRow").toggleClass("reset-show");
+      $("#resetRow").toggleClass("reset-hide");
+      $("#users .kickBtn").each(function () {
+        $(this).toggleClass("reset-show");
+        $(this).toggleClass("reset-hide");
+      })
     }
   });
 });

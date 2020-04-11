@@ -113,10 +113,6 @@
   text-align: center;
 }
 
-.reset-show {
-  width: 100%;
-}
-
 .reset-hide {
   visibility: hidden;
 }
@@ -134,4 +130,13 @@
   #col-users {
     display: none;
   }
+}
+
+.user {
+  height: 1.5em;
+}
+
+.kickBtn {
+  color: var(--danger)!important;
+  margin-left: 5px;
 }
