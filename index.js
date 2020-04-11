@@ -47,9 +47,9 @@ app.get("/", function (req, res) {
   });
 });
 
-app.get('/stimmung', (req, res) => {
+app.get("/stimmung", (req, res) => {
   res.redirect("/");
-})
+});
 
 app.post("/stimmung", checkAuth, function (req, res) {
   res.render("stimmung", {
