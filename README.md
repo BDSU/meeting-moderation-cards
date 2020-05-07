@@ -20,6 +20,7 @@ Run ```npm start```.
 * ```HTML_AUTHOR```: The HTML author of the app.
 * ```HTML_DESCRIPTION```: The HTML description of the app.
 * ```NAME_PATTERN```: The pattern the names have to match to join a session. Default is ```.*```
+* ```COOKIE_SECRET```: A random string used to securely sign cookies
 
 # Card meanings
 

@@ -11,6 +11,13 @@ var path = require("path");
 var morgan = require("morgan");
 app.use(morgan("common"));
 
+var session = require("express-session");
+app.use(session({
+  resave: false,
+  saveUninitialized: false,
+  secret: process.env.COOKIE_SECRET,
+}));
+
 var bodyParser = require("body-parser");
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use("/js", express.static(__dirname + "/js"));
@@ -27,7 +34,11 @@ app.engine(
 );
 
 function checkAuth(req, res, next) {
-  if (!req.body.name) {
+  if (req.body.name) {
+    req.session.name = req.body.name;
+  }
+
+  if (!req.session.name) {
     res.redirect("/");
   } else {
     next();
@@ -44,14 +55,11 @@ app.get("/", function (req, res) {
       : "",
     html_author: process.env.HTML_AUTHOR ? process.env.HTML_AUTHOR : "",
     name_pattern: process.env.NAME_PATTERN ? process.env.NAME_PATTERN : ".*",
+    name: req.session.name,
   });
 });
 
-app.get("/stimmung", (req, res) => {
-  res.redirect("/");
-});
-
-app.post("/stimmung", checkAuth, function (req, res) {
+app.all("/stimmung", checkAuth, function (req, res) {
   res.render("stimmung", {
     html_title: process.env.HTML_TITLE
       ? process.env.HTML_TITLE
@@ -60,7 +68,7 @@ app.post("/stimmung", checkAuth, function (req, res) {
       ? process.env.HTML_DESCRIPTION
       : "",
     html_author: process.env.HTML_AUTHOR ? process.env.HTML_AUTHOR : "",
-    name: req.body.name,
+    name: req.session.name,
   });
 });
 
