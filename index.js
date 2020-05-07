@@ -2,6 +2,8 @@ require("dotenv").config();
 var express = require("express");
 var http = require("http");
 var handlebars = require("express-handlebars");
+var popsicle = require('popsicle');
+var ClientOAuth2 = require('client-oauth2');
 
 var app = express();
 var server = http.Server(app);
@@ -33,8 +35,20 @@ app.engine(
   })
 );
 
+function getPropertyByPath(obj, path) {
+  return path.split('.').reduce((data, key) => {
+    if (key in data) {
+      return data[key];
+    }
+
+    return undefined;
+  }, obj);
+}
+
+const oauthEnabled = !!process.env.OAUTH_CLIENT_ID;
+
 function checkAuth(req, res, next) {
-  if (req.body.name) {
+  if (req.body.name && !oauthEnabled) {
     req.session.name = req.body.name;
   }
 
@@ -45,19 +59,57 @@ function checkAuth(req, res, next) {
   }
 }
 
-app.get("/", function (req, res) {
-  res.render("join", {
-    html_title: process.env.HTML_TITLE
+if (!oauthEnabled) {
+  app.get("/", function (req, res) {
+    res.render("join", {
+      html_title: process.env.HTML_TITLE
       ? process.env.HTML_TITLE
       : "Stimmungskarten",
-    html_description: process.env.HTML_DESCRIPTION
+      html_description: process.env.HTML_DESCRIPTION
       ? process.env.HTML_DESCRIPTION
       : "",
-    html_author: process.env.HTML_AUTHOR ? process.env.HTML_AUTHOR : "",
-    name_pattern: process.env.NAME_PATTERN ? process.env.NAME_PATTERN : ".*",
-    name: req.session.name,
+      html_author: process.env.HTML_AUTHOR ? process.env.HTML_AUTHOR : "",
+      name_pattern: process.env.NAME_PATTERN ? process.env.NAME_PATTERN : ".*",
+      name: req.session.name,
+    });
   });
-});
+} else {
+  const oauthClient = new ClientOAuth2({
+    clientId: process.env.OAUTH_CLIENT_ID,
+    clientSecret: process.env.OAUTH_CLIENT_SECRET,
+    scopes: process.env.OAUTH_SCOPES.split(" "),
+    authorizationUri: process.env.OAUTH_AUTHORIZATION_URI,
+    accessTokenUri: process.env.OAUTH_ACCESSTOKEN_URI,
+    redirectUri: `${process.env.OAUTH_REDIRECT_BASE}/oauth/callback`,
+  });
+
+  app.get("/", (req, res) => {
+    const uri = oauthClient.code.getUri();
+    res.redirect(uri);
+  });
+
+  app.get("/oauth/callback", async (req, res) => {
+    try {
+      const user = await oauthClient.code.getToken(req.originalUrl);
+      const requestOptions = user.sign({
+        url: process.env.OAUTH_USER_ENDPOINT,
+      });
+
+      const response = await popsicle.request(requestOptions).use(popsicle.plugins.parse('json'));
+      const userData = response.body;
+
+      req.session.name = process.env.OAUTH_USER_NAME_PATH.split("|")
+        .map(path => getPropertyByPath(userData, path))
+        .join(" ")
+        .trim();
+
+      return res.redirect("/stimmung");
+    } catch (exception) {
+      // TODO: do actual error handling
+      return res.redirect("/");
+    }
+  });
+}
 
 app.all("/stimmung", checkAuth, function (req, res) {
   res.render("stimmung", {

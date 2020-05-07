@@ -21,6 +21,15 @@ Run ```npm start```.
 * ```HTML_DESCRIPTION```: The HTML description of the app.
 * ```NAME_PATTERN```: The pattern the names have to match to join a session. Default is ```.*```
 * ```COOKIE_SECRET```: A random string used to securely sign cookies
+* ```OAUTH_*```: Configs for an optional OAuth2 integration; leave empty to disable OAuth
+  * ```OAUTH_CLIENT_ID```: The OAuth client ID for this tool
+  * ```OAUTH_CLIENT_SECRET```: The OAuth client secret
+  * ```OAUTH_SCOPES```: A space separated list of scopes (e.g. "user.read profile")
+  * ```OAUTH_AUTHORIZATION_URI```: The authorization URL for the code grant authentication
+  * ```OAUTH_ACCESSTOKEN_URI```: The endpoint URL for access tokens
+  * ```OAUTH_REDIRECT_BASE```: The base URL for the redirect call back (e.g. "http://locahost:8080")
+  * ```OAUTH_USER_ENDPOINT```: API endpoint to fetch user data from
+  * ```OAUTH_USER_NAME_PATH```: The property path of the display name in the user data; you can specify multiple properties separated by a pipe which will be joned with a single space (e.g. "user.profile.firstname|user.profile.lastname")
 
 # Card meanings
 
