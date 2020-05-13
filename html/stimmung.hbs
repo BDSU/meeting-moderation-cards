@@ -2,7 +2,7 @@
 
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+  <meta name="viewport" content="viewport-fit=cover, width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <meta name="description" content="{{html_description}}" />
   <meta name="author" content="{{html_author}}" />
   <meta name="generator" content="Jekyll v3.8.5" />
@@ -36,8 +36,8 @@
   <link href="/css/signin.css" rel="stylesheet" />
 </head>
 
-<body class="text-center">
-  <div class="container">
+<body class="py-0 text-center align-items-stretch">
+  <div class="container py-3 d-flex flex-column align-items-stretch">
     <div class="row">
       <div id="counts">
         <p>
@@ -50,12 +50,12 @@
         </p>
       </div>
     </div>
-    <div class="row">
-      <div class="col" id='col-cards'>
-        <div id="cards"></div>
+    <div class="row flex-grow-1 h-100 overflow-hidden">
+      <div class="col h-100" id='col-cards'>
+        <div id="cards" class="h-100 overflow-auto"></div>
       </div>
-      <div class="col" id='col-users'>
-        <div id="users"></div>
+      <div class="col h-100" id='col-users'>
+        <div id="users" class="h-100 overflow-auto"></div>
       </div>
     </div>
     <div class="row" id="displayAsRow">
