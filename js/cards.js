@@ -3,7 +3,6 @@ var ownColors = {
   blue: false,
   green: false,
   red: false,
-  white: false,
   all: false,
 };
 

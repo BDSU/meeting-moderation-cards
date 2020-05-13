@@ -40,17 +40,15 @@
 .card-all {
   background: linear-gradient(
     110deg,
-    yellow 20%,
-    blue 20%,
-    blue 40%,
-    green 40%,
-    green 60%,
-    red 60%,
-    red 80%,
-    white 80%,
-    white 100%
+    yellow 25%,
+    blue 25%,
+    blue 50%,
+    green 50%,
+    green 75%,
+    red 75%,
+    red 100%
   );
-  color: black;
+  color: white;
 }
 
 .btn-color {
@@ -96,15 +94,13 @@
 .btn-color-all {
   background: linear-gradient(
     110deg,
-    yellow 20%,
-    blue 20%,
-    blue 40%,
-    green 40%,
-    green 60%,
-    red 60%,
-    red 80%,
-    white 80%,
-    white 100%
+    yellow 25%,
+    blue 25%,
+    blue 50%,
+    green 50%,
+    green 75%,
+    red 75%,
+    red 100%
   );
 }
 
