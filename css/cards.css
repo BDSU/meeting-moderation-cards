@@ -166,3 +166,7 @@
 .disconnected {
   margin-top: 20px;
 }
+
+.row {
+  flex-shrink: 0;
+}
