@@ -38,10 +38,12 @@ $(document).ready(() => {
       case "raise":
         renderCard(data);
         countCards();
+        renderIfUserHasRaised(data.id);
         break;
       case "lower":
         $(`#${data.id}${data.card}`).remove();
         countCards();
+        renderIfUserHasRaised(data.id);
         break;
       case "all":
         $("#cards").empty();
@@ -49,14 +51,23 @@ $(document).ready(() => {
           renderCard(card);
         });
         countCards();
+        data.cards.forEach((card) => {
+          renderIfUserHasRaised(card.id);
+        });
         break;
       case "reset":
         $("#cards").empty();
         resetOwnCards();
         countCards();
+        document
+          .querySelectorAll(`div.user>span.has-raised`)
+          .forEach((dot) => dot.remove());
         break;
       case "connected":
         renderUsers(data);
+        data.connected.forEach((user) => {
+          renderIfUserHasRaised(user.id);
+        });
         break;
       default:
         $("#cards").append(msg.data);
@@ -78,6 +89,22 @@ $(document).ready(() => {
     $("#cards").append(card);
   }
 
+  function renderIfUserHasRaised(id) {
+    let usersCards = document.querySelectorAll(`div.card-common[id^="${id}"]`);
+    let user = document.querySelector(`div.user[id="${id}"]`);
+    let currentSpan = document.querySelector(
+      `div.user[id="${id}"]>span.has-raised`
+    );
+    if (currentSpan) currentSpan.remove();
+
+    if (user && usersCards.length > 0) {
+      user.innerHTML =
+        "<span class='has-raised'>&bull;</span>" + user.innerHTML;
+      let kickBtn = document.querySelector(`div.user[id="${id}"] a.kickBtn`);
+      if (kickBtn) kickBtn.addEventListener("click", () => kickUser(id));
+    }
+  }
+
   function compareUsers(a, b) {
     if (a.name.localeCompare(b.name) != 0) {
       return a.name.localeCompare(b.name);
@@ -96,14 +123,7 @@ $(document).ready(() => {
     });
 
     $("#users .kickBtn").each(function () {
-      $(this).on("click", function () {
-        socket.send(
-          JSON.stringify({
-            type: "kick",
-            id: $(this).closest(".user").attr("id"),
-          })
-        );
-      });
+      $(this).on("click", () => kickUser($(this).closest(".user").attr("id")));
     });
 
     if (!$("#resetRow").hasClass("reset-hide")) {
@@ -111,6 +131,15 @@ $(document).ready(() => {
         $(this).toggleClass("reset-hide");
       });
     }
+  }
+
+  function kickUser(id) {
+    socket.send(
+      JSON.stringify({
+        type: "kick",
+        id,
+      })
+    );
   }
 
   function countCards() {
