@@ -53,6 +53,7 @@ function checkAuth(req, res, next) {
   }
 
   if (!req.session.name) {
+    req.session.redirectUri = req.originalUrl;
     res.redirect("/");
   } else {
     next();
@@ -71,6 +72,7 @@ if (!oauthEnabled) {
       html_author: process.env.HTML_AUTHOR ? process.env.HTML_AUTHOR : "",
       name_pattern: process.env.NAME_PATTERN ? process.env.NAME_PATTERN : ".*",
       name: req.session.name,
+      action: req.session.redirectUri || '/stimmung',
     });
   });
 } else {
@@ -103,7 +105,7 @@ if (!oauthEnabled) {
         .join(" ")
         .trim();
 
-      return res.redirect("/stimmung");
+      return res.redirect(req.session.redirectUri || "/stimmung");
     } catch (exception) {
       // TODO: do actual error handling
       return res.redirect("/");
