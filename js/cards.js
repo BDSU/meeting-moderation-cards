@@ -11,7 +11,8 @@ $(document).ready(() => {
   let wsUrl =
     (location.protocol == "https:" ? "wss://" : "ws://") +
     location.hostname +
-    (location.port ? ":" + location.port : "");
+    (location.port ? ":" + location.port : "") +
+    '/' + roomId;
   var socket = new WebSocket(wsUrl, "stimmung"); // "ws://localhost:8080/"
   socket.onopen = function () {
     socket.send(

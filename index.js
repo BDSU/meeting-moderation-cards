@@ -111,7 +111,7 @@ if (!oauthEnabled) {
   });
 }
 
-app.all("/stimmung", checkAuth, function (req, res) {
+app.all("/stimmung/:room?", checkAuth, function (req, res) {
   res.render("stimmung", {
     html_title: process.env.HTML_TITLE
       ? process.env.HTML_TITLE
@@ -121,6 +121,7 @@ app.all("/stimmung", checkAuth, function (req, res) {
       : "",
     html_author: process.env.HTML_AUTHOR ? process.env.HTML_AUTHOR : "",
     name: req.session.name,
+    room: req.params.room || '',
   });
 });
 
@@ -135,16 +136,23 @@ var wss = new WSS({
   autoAcceptConnections: false,
 });
 
-var connections = []; // {name, connection}
-var cards = [];
+var rooms = {};
 wss.on("request", function (request) {
   var connection = request.accept("stimmung", request.origin);
+  const roomId = request.resourceURL.path.substr(1);
+  if (!rooms[roomId]) {
+    rooms[roomId] = {
+      connections: [],
+      cards: [],
+    };
+  }
+  const room = rooms[roomId];
 
   connection.on("message", function (message) {
     var name = "";
     var id = "";
 
-    connections
+    room.connections
       .filter((item) => item.connection == connection)
       .map((item) => {
         name = item.name;
@@ -159,19 +167,19 @@ wss.on("request", function (request) {
       case "join":
         do {
           id = generateId();
-        } while (connections.filter((item) => item.id == id).length > 0);
+        } while (room.connections.filter((item) => item.id == id).length > 0);
 
-        connections.push({ name: data.name, connection, id });
+        room.connections.push({ name: data.name, connection, id });
         var msg = JSON.stringify({
           type: "connected",
-          connected: connections.map((item) => {
+          connected: room.connections.map((item) => {
             return { name: item.name, id: item.id };
           }),
         });
         connection.send(
           JSON.stringify({
             type: "all",
-            cards,
+            cards: room.cards,
           })
         );
         break;
@@ -187,7 +195,7 @@ wss.on("request", function (request) {
           name,
         };
         var msg = JSON.stringify(card);
-        cards.push(card);
+        room.cards.push(card);
         break;
       case "lower":
         card = {
@@ -197,25 +205,25 @@ wss.on("request", function (request) {
           name,
         };
         var msg = JSON.stringify(card);
-        cards = cards.filter(
+        room.cards = room.cards.filter(
           (item) => !(item.id === id && item.card === data.card)
         );
         break;
       case "reset":
-        cards = [];
+        room.cards = [];
         var msg = JSON.stringify({ type: "reset" });
         break;
       case "kick":
-        let kickconnection = connections.filter((conn) => conn.id == data.id)[0]
+        let kickconnection = room.connections.filter((conn) => conn.id == data.id)[0]
           .connection;
         kickconnection.close();
         break;
     }
 
-    // console.log(cards);
+    // console.log(room.cards);
     // console.log(`Outbound: ${msg}`);
     if (msg) {
-      connections.map((item) => {
+      room.connections.map((item) => {
         if (item.connection && item.connection.send) {
           item.connection.send(msg);
         }
@@ -227,30 +235,30 @@ wss.on("request", function (request) {
     var name = "";
     var id = "";
 
-    connections
+    room.connections
       .filter((item) => item.connection == connection)
       .map((item) => {
         name = item.name;
         id = item.id;
       });
 
-    connections = connections.filter(
+    room.connections = room.connections.filter(
       (item) => item.connection != connection && item.id != id
     );
-    cards = cards.filter((item) => item.name !== name);
+    room.cards = room.cards.filter((item) => item.name !== name);
 
-    connections.map((item) => {
+    room.connections.map((item) => {
       if (item.connection && item.connection.send) {
         item.connection.send(
           JSON.stringify({
             type: "all",
-            cards,
+            cards: room.cards,
           })
         );
         item.connection.send(
           JSON.stringify({
             type: "connected",
-            connected: connections.map((item) => {
+            connected: room.connections.map((item) => {
               return { name: item.name, id: item.id };
             }),
           })
