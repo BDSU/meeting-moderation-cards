@@ -1,26 +1,27 @@
-require("dotenv").config();
-var express = require("express");
-var http = require("http");
-var handlebars = require("express-handlebars");
-var popsicle = require('popsicle');
-var ClientOAuth2 = require('client-oauth2');
+import * as dotenv from "dotenv";
+import * as express from "express";
+import * as http from "http";
+import * as handlebars from "express-handlebars";
+import * as popsicle from "popsicle";
+import * as ClientOAuth2 from "client-oauth2";
+import * as path from "path";
+import * as morgan from "morgan";
+import * as session from "express-session";
+import * as bodyParser from "body-parser";
+import * as websocket from "websocket";
 
+dotenv.config();
 var app = express();
-var server = http.Server(app);
+var server = new http.Server(app);
 
-var path = require("path");
-
-var morgan = require("morgan");
 app.use(morgan("common"));
 
-var session = require("express-session");
 app.use(session({
   resave: false,
   saveUninitialized: false,
   secret: process.env.COOKIE_SECRET,
 }));
 
-var bodyParser = require("body-parser");
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use("/js", express.static(__dirname + "/js"));
 app.use("/css", express.static(__dirname + "/css"));
@@ -31,11 +32,11 @@ app.engine(
   "hbs",
   handlebars({
     extname: "hbs",
-    defaultLayout: false,
+    defaultLayout: "",
   })
 );
 
-function getPropertyByPath(obj, path) {
+function getPropertyByPath(obj: object, path: string) {
   return path.split('.').reduce((data, key) => {
     if (key in data) {
       return data[key];
@@ -47,7 +48,7 @@ function getPropertyByPath(obj, path) {
 
 const oauthEnabled = !!process.env.OAUTH_CLIENT_ID;
 
-function checkAuth(req, res, next) {
+function checkAuth(req: express.Request, res: express.Response, next: express.NextFunction) {
   if (req.body.name && !oauthEnabled) {
     req.session.name = req.body.name;
   }
@@ -61,7 +62,7 @@ function checkAuth(req, res, next) {
 }
 
 if (!oauthEnabled) {
-  app.get("/", function (req, res) {
+  app.get("/", function (req: express.Request, res: express.Response) {
     res.render("join", {
       html_title: process.env.HTML_TITLE
       ? process.env.HTML_TITLE
@@ -85,12 +86,12 @@ if (!oauthEnabled) {
     redirectUri: `${process.env.OAUTH_REDIRECT_BASE}/oauth/callback`,
   });
 
-  app.get("/", (req, res) => {
+  app.get("/", (req: express.Request, res: express.Response) => {
     const uri = oauthClient.code.getUri();
     res.redirect(uri);
   });
 
-  app.get("/oauth/callback", async (req, res) => {
+  app.get("/oauth/callback", async (req: express.Request, res: express.Response) => {
     try {
       const user = await oauthClient.code.getToken(req.originalUrl);
       const requestOptions = user.sign({
@@ -110,10 +111,11 @@ if (!oauthEnabled) {
       // TODO: do actual error handling
       return res.redirect("/");
     }
+
   });
 }
 
-app.all("/stimmung/:room?", checkAuth, function (req, res) {
+app.all("/stimmung/:room?", checkAuth, function (req: express.Request, res: express.Response) {
   res.render("stimmung", {
     html_title: process.env.HTML_TITLE
       ? process.env.HTML_TITLE
@@ -131,14 +133,30 @@ server.listen(process.env.PORT, () => {
   console.log(`Server listening on port ${process.env.PORT}`);
 });
 
-var WSS = require("websocket").server;
-
-var wss = new WSS({
+var wss = new websocket.server({
   httpServer: server,
   autoAcceptConnections: false,
 });
 
-var rooms = {};
+interface Room {
+  connections: Connection[];
+  cards: Card[];
+}
+
+interface Connection {
+  name: string;
+  connection: websocket.connection;
+  id: string;
+}
+
+interface Card {
+  type: any;
+  card: any;
+  id: string;
+  name: string;
+}
+
+var rooms: Room[] = [];
 wss.on("request", function (request) {
   var connection = request.accept("stimmung", request.origin);
   const roomId = request.resourceURL.path.substr(1);
@@ -163,7 +181,7 @@ wss.on("request", function (request) {
 
     var data = JSON.parse(message.utf8Data);
     // console.log(`Inbound: ${message.utf8Data}`);
-    let card = undefined;
+    let card: Card = undefined;
 
     switch (data.type) {
       case "join":
@@ -171,7 +189,7 @@ wss.on("request", function (request) {
           id = generateId();
         } while (room.connections.filter((item) => item.id == id).length > 0);
 
-        room.connections.push({ name: data.name, connection, id });
+        room.connections.push({ name: data.name, connection: connection, id: id });
         var msg = JSON.stringify({
           type: "connected",
           connected: room.connections.map((item) => {
