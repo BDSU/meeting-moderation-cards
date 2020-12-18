@@ -1,5 +1,5 @@
 import dotenv from "dotenv";
-import express from "express";
+import express, {Request, Response, NextFunction} from "express";
 import http from "http";
 import handlebars from "express-handlebars";
 import * as popsicle from "popsicle";
@@ -48,7 +48,7 @@ function getPropertyByPath(obj: object, path: string) {
 
 const oauthEnabled = !!process.env.OAUTH_CLIENT_ID;
 
-function checkAuth(req: express.Request, res: express.Response, next: express.NextFunction) {
+function checkAuth(req: Request, res: Response, next: NextFunction) {
   if (req.body.name && !oauthEnabled) {
     req.session.name = req.body.name;
   }
@@ -62,7 +62,7 @@ function checkAuth(req: express.Request, res: express.Response, next: express.Ne
 }
 
 if (!oauthEnabled) {
-  app.get("/", function (req: express.Request, res: express.Response) {
+  app.get("/", function (req: Request, res: Response) {
     res.render("join", {
       html_title: process.env.HTML_TITLE
       ? process.env.HTML_TITLE
@@ -86,12 +86,12 @@ if (!oauthEnabled) {
     redirectUri: `${process.env.OAUTH_REDIRECT_BASE}/oauth/callback`,
   });
 
-  app.get("/", (req: express.Request, res: express.Response) => {
+  app.get("/", (req: Request, res: Response) => {
     const uri = oauthClient.code.getUri();
     res.redirect(uri);
   });
 
-  app.get("/oauth/callback", async (req: express.Request, res: express.Response) => {
+  app.get("/oauth/callback", async (req: Request, res: Response) => {
     try {
       const user = await oauthClient.code.getToken(req.originalUrl);
       const requestOptions = user.sign({
@@ -115,7 +115,7 @@ if (!oauthEnabled) {
   });
 }
 
-app.all("/stimmung/:room?", checkAuth, function (req: express.Request, res: express.Response) {
+app.all("/stimmung/:room?", checkAuth, function (req: Request, res: Response) {
   res.render("stimmung", {
     html_title: process.env.HTML_TITLE
       ? process.env.HTML_TITLE
