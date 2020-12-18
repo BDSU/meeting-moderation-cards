@@ -1,14 +1,14 @@
-import * as dotenv from "dotenv";
-import * as express from "express";
-import * as http from "http";
-import * as handlebars from "express-handlebars";
+import dotenv from "dotenv";
+import express from "express";
+import http from "http";
+import handlebars from "express-handlebars";
 import * as popsicle from "popsicle";
-import * as ClientOAuth2 from "client-oauth2";
-import * as path from "path";
-import * as morgan from "morgan";
-import * as session from "express-session";
-import * as bodyParser from "body-parser";
-import * as websocket from "websocket";
+import ClientOAuth2 from "client-oauth2";
+import path from "path";
+import morgan from "morgan";
+import session from "express-session";
+import bodyParser from "body-parser";
+import websocket from "websocket";
 
 dotenv.config();
 var app = express();
