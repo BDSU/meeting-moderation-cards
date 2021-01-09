@@ -166,7 +166,7 @@ wss.on("request", function (request) {
       cards: [],
     };
   }
-  const room = rooms[roomId];
+  const room: Room = rooms[roomId];
 
   connection.on("message", function (message) {
     var name = "";
