@@ -9,6 +9,7 @@ import * as morgan from "morgan";
 import * as session from "express-session";
 import * as bodyParser from "body-parser";
 import * as websocket from "websocket";
+import * as crypto from "crypto";
 
 dotenv.config();
 let app = express();
@@ -51,6 +52,7 @@ const oauthEnabled = !!process.env.OAUTH_CLIENT_ID;
 function checkAuth(req: express.Request, res: express.Response, next: express.NextFunction) {
   if (req.body.name && !oauthEnabled) {
     req.session.name = req.body.name;
+    req.session.uid = generateId();
   }
 
   if (!req.session.name) {
@@ -100,11 +102,19 @@ if (!oauthEnabled) {
 
       const response = await popsicle.request(requestOptions).use(popsicle.plugins.parse('json'));
       const userData = response.body;
+      const hash = crypto.createHash('sha256');
 
       req.session.name = process.env.OAUTH_USER_NAME_PATH.split("|")
         .map(path => getPropertyByPath(userData, path))
         .join(" ")
         .trim();
+
+      req.session.uid = hash.update(
+        process.env.OAUTH_USER_ID_PATH.split("|")
+          .map(path => getPropertyByPath(userData, path))
+          .join("_")
+          .trim()
+      ).digest('hex');
 
       return res.redirect(req.session.redirectUri || "/stimmung");
     } catch (exception) {

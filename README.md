@@ -2,7 +2,7 @@
 [![Node.js: 12.9.1](https://img.shields.io/badge/Node.js-12.9.1-green.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![npm: 6.14.4](https://img.shields.io/badge/npm-6.14.4-green.svg)](https://www.gnu.org/licenses/gpl-3.0)
 
-This web application can be used for communication in large online meetings. Rather than sponaneously talking or using the chat, this app offers different cards which can be raised or lowered by every participant while preserving the order in which cards have been raised.
+This web application can be used for communication in large online meetings. Rather than spontaneously talking or using the chat, this app offers different cards which can be raised or lowered by every participant while preserving the order in which cards have been raised.
 
 # Installation
 
@@ -29,7 +29,8 @@ Run ```npm start```.
   * ```OAUTH_ACCESSTOKEN_URI```: The endpoint URL for access tokens
   * ```OAUTH_REDIRECT_BASE```: The base URL for the redirect call back (e.g. "http://locahost:8080")
   * ```OAUTH_USER_ENDPOINT```: API endpoint to fetch user data from
-  * ```OAUTH_USER_NAME_PATH```: The property path of the display name in the user data; you can specify multiple properties separated by a pipe which will be joned with a single space (e.g. "user.profile.firstname|user.profile.lastname")
+  * ```OAUTH_USER_NAME_PATH```: The property path of the display name in the user data; you can specify multiple properties separated by a pipe which will be joined with a single space (e.g. "user.profile.firstname|user.profile.lastname")
+  * ```OAUTH_USER_ID_PATH```: The property path of the user id in the user data; you can specify multiple properties separated by a pipe which will be joined with a single space (e.g. "user.profile.postal_code|user.profile.email")
 
 # Card meanings
 
