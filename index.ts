@@ -263,7 +263,7 @@ wss.on("request", function (request) {
       });
 
     room.connections = room.connections.filter(
-      (item) => item.connection != connection && item.id != id
+      (item) => item.connection != connection
     );
     room.cards = room.cards.filter((item) => item.name !== name);
 
