@@ -13,7 +13,7 @@ $(document).ready(() => {
     location.hostname +
     (location.port ? ":" + location.port : "") +
     '/' + roomId;
-  var socket = new WebSocket(wsUrl, "stimmung"); // "ws://localhost:8080/"
+  let socket = new WebSocket(wsUrl, "stimmung"); // "ws://localhost:8080/"
   socket.onopen = function () {
     socket.send(
       JSON.stringify({
@@ -22,17 +22,17 @@ $(document).ready(() => {
       })
     );
   };
-  socket.onmessage = function (msg) {
-    var data = JSON.parse(msg.data);
+  socket.onmessage = function (msgEvt) {
+    let data = JSON.parse(msgEvt.data);
     switch (data.type) {
       case "msg":
-        var msg = $("<div>" + data.name + ": " + data.msg + "</div>");
+        let msg = $("<div>" + data.name + ": " + data.msg + "</div>");
         $("#cards").append(msg);
         break;
       case "join":
         $("#users").empty();
-        for (var i = 0; i < data.names.length; i++) {
-          var user = $("<div>" + data.names[i] + "</div>");
+        for (let i = 0; i < data.names.length; i++) {
+          let user = $("<div>" + data.names[i] + "</div>");
           $("#users").append(user);
         }
         break;

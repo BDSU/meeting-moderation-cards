@@ -11,8 +11,8 @@ import * as bodyParser from "body-parser";
 import * as websocket from "websocket";
 
 dotenv.config();
-var app = express();
-var server = new http.Server(app);
+let app = express();
+let server = new http.Server(app);
 
 app.use(morgan("common"));
 
@@ -133,7 +133,7 @@ server.listen(process.env.PORT, () => {
   console.log(`Server listening on port ${process.env.PORT}`);
 });
 
-var wss = new websocket.server({
+let wss = new websocket.server({
   httpServer: server,
   autoAcceptConnections: false,
 });
@@ -156,9 +156,9 @@ interface Card {
   name: string;
 }
 
-var rooms: Room[] = [];
+let rooms: Room[] = [];
 wss.on("request", function (request) {
-  var connection = request.accept("stimmung", request.origin);
+  let connection = request.accept("stimmung", request.origin);
   const roomId = request.resourceURL.path.substr(1);
   if (!rooms[roomId]) {
     rooms[roomId] = {
@@ -169,8 +169,8 @@ wss.on("request", function (request) {
   const room: Room = rooms[roomId];
 
   connection.on("message", function (message) {
-    var name = "";
-    var id = "";
+    let name = "";
+    let id = "";
 
     room.connections
       .filter((item) => item.connection == connection)
@@ -179,9 +179,10 @@ wss.on("request", function (request) {
         id = item.id;
       });
 
-    var data = JSON.parse(message.utf8Data);
+    let data = JSON.parse(message.utf8Data);
     // console.log(`Inbound: ${message.utf8Data}`);
     let card: Card = undefined;
+    let msg: string;
 
     switch (data.type) {
       case "join":
@@ -190,7 +191,7 @@ wss.on("request", function (request) {
         } while (room.connections.filter((item) => item.id == id).length > 0);
 
         room.connections.push({ name: data.name, connection: connection, id: id });
-        var msg = JSON.stringify({
+        msg = JSON.stringify({
           type: "connected",
           connected: room.connections.map((item) => {
             return { name: item.name, id: item.id };
@@ -204,8 +205,7 @@ wss.on("request", function (request) {
         );
         break;
       case "msg":
-        var msg =
-          '{"type": "msg", "name": "' + name + '", "msg":"' + data.msg + '"}';
+        msg = '{"type": "msg", "name": "' + name + '", "msg":"' + data.msg + '"}';
         break;
       case "raise":
         card = {
@@ -214,7 +214,7 @@ wss.on("request", function (request) {
           id,
           name,
         };
-        var msg = JSON.stringify(card);
+        msg = JSON.stringify(card);
         room.cards.push(card);
         break;
       case "lower":
@@ -224,14 +224,14 @@ wss.on("request", function (request) {
           id,
           name,
         };
-        var msg = JSON.stringify(card);
+        msg = JSON.stringify(card);
         room.cards = room.cards.filter(
           (item) => !(item.id === id && item.card === data.card)
         );
         break;
       case "reset":
         room.cards = [];
-        var msg = JSON.stringify({ type: "reset" });
+        msg = JSON.stringify({ type: "reset" });
         break;
       case "kick":
         let kickconnection = room.connections.filter((conn) => conn.id == data.id)[0]
@@ -252,8 +252,8 @@ wss.on("request", function (request) {
   });
 
   connection.on("close", function (message) {
-    var name = "";
-    var id = "";
+    let name = "";
+    let id = "";
 
     room.connections
       .filter((item) => item.connection == connection)
@@ -288,13 +288,13 @@ wss.on("request", function (request) {
   });
 });
 
-var ALPHABET = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+let ALPHABET = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
-var ID_LENGTH = 8;
+let ID_LENGTH = 8;
 
-var generateId = function () {
-  var rtn = "";
-  for (var i = 0; i < ID_LENGTH; i++) {
+let generateId = function () {
+  let rtn = "";
+  for (let i = 0; i < ID_LENGTH; i++) {
     rtn += ALPHABET.charAt(Math.floor(Math.random() * ALPHABET.length));
   }
   return rtn;
