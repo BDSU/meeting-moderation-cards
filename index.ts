@@ -270,7 +270,9 @@ wss.on("request", async function (request) {
     room.connections = room.connections.filter(
       (item) => item.connection != connection
     );
-    room.cards = room.cards.filter((item) => item.name !== name);
+    if (!room.connections.find((item) => item.id == id)) {
+      room.cards = room.cards.filter((item) => item.id !== id);
+    }
 
     room.connections.map((item) => {
       if (item.connection && item.connection.send) {
