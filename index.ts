@@ -181,7 +181,7 @@ wss.on("request", function (request) {
 
     let data = JSON.parse(message.utf8Data);
     // console.log(`Inbound: ${message.utf8Data}`);
-    let card: Card = undefined;
+    let card: Card;
     let msg: string;
 
     switch (data.type) {
