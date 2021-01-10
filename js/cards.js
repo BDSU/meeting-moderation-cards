@@ -37,16 +37,10 @@ $(document).ready(() => {
         }
         break;
       case "raise":
+      case "lower":
         renderCard(data);
         countCards();
         renderIfUserHasRaised(data.id);
-        if (uid && data.id == uid) toggleCardButton(data.card);
-        break;
-      case "lower":
-        $(`#${data.id}${data.card}`).remove();
-        countCards();
-        renderIfUserHasRaised(data.id);
-        if (uid && data.id == uid) toggleCardButton(data.card);
         break;
       case "all":
         $("#cards").empty();
@@ -88,8 +82,13 @@ $(document).ready(() => {
   };
 
   function renderCard(data) {
-    let card = `<div id="${data.id}${data.card}" class="card-common card-${data.card}">${data.name}</div>`;
-    $("#cards").append(card);
+    if (data.type === "raise") {
+      let card = `<div id="${data.id}${data.card}" class="card-common card-${data.card}">${data.name}</div>`;
+      $("#cards").append(card);
+    } else {
+      $(`#${data.id}${data.card}`).remove();
+    }
+    if (uid && data.id === uid) setCardButton(data.card, data.type === "raise");
   }
 
   function renderIfUserHasRaised(id) {
@@ -159,11 +158,18 @@ $(document).ready(() => {
     });
   }
 
-  function toggleCardButton(color) {
-    ownColors[color] = !ownColors[color];
+  function setCardButton(color, raised) {
+    ownColors[color] = raised;
     let button = $(`#${color}Btn`);
-    button.toggleClass("btn-color-unselected");
-    button.toggleClass("btn-color-selected");
+    let selected = "btn-color-selected";
+    let unselected = "btn-color-unselected";
+    if (raised) {
+      button.addClass(selected);
+      button.removeClass(unselected);
+    } else {
+      button.removeClass(selected);
+      button.addClass(unselected);
+    }
   }
 
   Object.keys(ownColors).forEach((color) => {
