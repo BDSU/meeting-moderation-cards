@@ -258,9 +258,8 @@ wss.on("request", async function (request) {
         msg = JSON.stringify({ type: "reset" });
         break;
       case "kick":
-        let kickconnection = room.connections.filter((conn) => conn.id == data.id)[0]
-          .connection;
-        kickconnection.close();
+        room.connections.filter((conn) => conn.id == data.id)
+          .map((conn) => conn.connection.close());
         break;
     }
 
