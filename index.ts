@@ -228,26 +228,30 @@ wss.on("request", async function (request) {
         msg = '{"type": "msg", "name": "' + name + '", "msg":"' + data.msg + '"}';
         break;
       case "raise":
-        card = {
-          type: data.type,
-          card: data.card,
-          id,
-          name,
-        };
-        msg = JSON.stringify(card);
-        room.cards.push(card);
+        if (!room.cards.find((item) => item.card === data.card && item.id === id)) {
+          card = {
+            type: data.type,
+            card: data.card,
+            id,
+            name,
+          };
+          msg = JSON.stringify(card);
+          room.cards.push(card);
+        }
         break;
       case "lower":
-        card = {
-          type: data.type,
-          card: data.card,
-          id,
-          name,
-        };
-        msg = JSON.stringify(card);
-        room.cards = room.cards.filter(
-          (item) => !(item.id === id && item.card === data.card)
-        );
+        if (room.cards.find((item) => item.card === data.card && item.id === id)) {
+          card = {
+            type: data.type,
+            card: data.card,
+            id,
+            name,
+          };
+          msg = JSON.stringify(card);
+          room.cards = room.cards.filter(
+              (item) => !(item.id === id && item.card === data.card)
+          );
+        }
         break;
       case "reset":
         room.cards = [];
