@@ -208,7 +208,12 @@ wss.on("request", async function (request) {
         room.connections.push({name, connection, id});
         msg = JSON.stringify({
           type: "connected",
-          connected: room.connections.map((item) => {
+          connected: room.connections.reduce((rv, cv) => {
+            if (!rv.find((item) => item.id == cv.id)) {
+              rv.push({name: cv.name, id: cv.id});
+            }
+            return rv;
+          }, []).map((item) => {
             return { name: item.name, id: item.id };
           }),
         });
@@ -285,7 +290,12 @@ wss.on("request", async function (request) {
         item.connection.send(
           JSON.stringify({
             type: "connected",
-            connected: room.connections.map((item) => {
+            connected: room.connections.reduce((rv, cv) => {
+              if (!rv.find((item) => item.id == cv.id)) {
+                rv.push({name: cv.name, id: cv.id});
+              }
+              return rv;
+            }, []).map((item) => {
               return { name: item.name, id: item.id };
             }),
           })
