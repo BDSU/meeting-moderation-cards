@@ -137,6 +137,7 @@ app.all("/stimmung/:room?", checkAuth, function (req: express.Request, res: expr
       : "",
     html_author: process.env.HTML_AUTHOR ? process.env.HTML_AUTHOR : "",
     name: req.session.name,
+    uid: req.session.uid || '',
     room: req.params.room || '',
   });
 });
