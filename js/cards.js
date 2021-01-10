@@ -40,11 +40,13 @@ $(document).ready(() => {
         renderCard(data);
         countCards();
         renderIfUserHasRaised(data.id);
+        if (uid && data.id == uid) toggleCardButton(data.card);
         break;
       case "lower":
         $(`#${data.id}${data.card}`).remove();
         countCards();
         renderIfUserHasRaised(data.id);
+        if (uid && data.id == uid) toggleCardButton(data.card);
         break;
       case "all":
         $("#cards").empty();
@@ -157,6 +159,13 @@ $(document).ready(() => {
     });
   }
 
+  function toggleCardButton(color) {
+    ownColors[color] = !ownColors[color];
+    let button = $(`#${color}Btn`);
+    button.toggleClass("btn-color-unselected");
+    button.toggleClass("btn-color-selected");
+  }
+
   Object.keys(ownColors).forEach((color) => {
     $(`#${color}Btn`).on("click", function (event) {
       event.preventDefault();
@@ -166,9 +175,6 @@ $(document).ready(() => {
           card: `${color}`,
         })
       );
-      ownColors[color] = !ownColors[color];
-      $(this).toggleClass("btn-color-unselected");
-      $(this).toggleClass("btn-color-selected");
     });
   });
 
