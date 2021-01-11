@@ -169,7 +169,24 @@ interface Card {
 }
 
 let rooms: Room[] = [];
-wss.on("request", function (request) {
+wss.on("request", async function (request) {
+  let name: string, id: string;
+  try {
+    let expressReq = request.httpRequest as express.Request;
+    ({name, id} = await new Promise((resolve, reject) => {
+      sessionParser(expressReq, {} as express.Response, () => {
+        if (expressReq.session && expressReq.session.name && expressReq.session.uid) {
+          resolve({name: expressReq.session.name as string, id: expressReq.session.uid as string});
+        } else {
+          reject("session, name or id not set");
+        }
+      })
+    }));
+  } catch (e) {
+    console.error("could not retrieve user name or id from session! Rejecting request...", request);
+    request.reject(403);
+    return;
+  }
   let connection = request.accept("stimmung", request.origin);
   const roomId = request.resourceURL.path.substr(1);
   if (!rooms[roomId]) {
@@ -181,16 +198,6 @@ wss.on("request", function (request) {
   const room: Room = rooms[roomId];
 
   connection.on("message", function (message) {
-    let name = "";
-    let id = "";
-
-    room.connections
-      .filter((item) => item.connection == connection)
-      .map((item) => {
-        name = item.name;
-        id = item.id;
-      });
-
     let data = JSON.parse(message.utf8Data);
     // console.log(`Inbound: ${message.utf8Data}`);
     let card: Card;
@@ -198,11 +205,7 @@ wss.on("request", function (request) {
 
     switch (data.type) {
       case "join":
-        do {
-          id = generateId();
-        } while (room.connections.filter((item) => item.id == id).length > 0);
-
-        room.connections.push({ name: data.name, connection: connection, id: id });
+        room.connections.push({name, connection, id});
         msg = JSON.stringify({
           type: "connected",
           connected: room.connections.map((item) => {
@@ -264,16 +267,6 @@ wss.on("request", function (request) {
   });
 
   connection.on("close", function (message) {
-    let name = "";
-    let id = "";
-
-    room.connections
-      .filter((item) => item.connection == connection)
-      .map((item) => {
-        name = item.name;
-        id = item.id;
-      });
-
     room.connections = room.connections.filter(
       (item) => item.connection != connection
     );
