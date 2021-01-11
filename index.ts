@@ -17,11 +17,13 @@ let server = new http.Server(app);
 
 app.use(morgan("common"));
 
-app.use(session({
+let sessionParser = session({
   resave: false,
   saveUninitialized: false,
   secret: process.env.COOKIE_SECRET,
-}));
+});
+
+app.use(sessionParser);
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use("/js", express.static(__dirname + "/js"));
