@@ -10,6 +10,7 @@ import * as session from "express-session";
 import * as bodyParser from "body-parser";
 import * as websocket from "websocket";
 import * as crypto from "crypto";
+import * as QRCode from "qrcode";
 
 dotenv.config();
 let app = express();
@@ -87,7 +88,7 @@ if (!oauthEnabled) {
     scopes: process.env.OAUTH_SCOPES.split(" "),
     authorizationUri: process.env.OAUTH_AUTHORIZATION_URI,
     accessTokenUri: process.env.OAUTH_ACCESSTOKEN_URI,
-    redirectUri: `${process.env.OAUTH_REDIRECT_BASE}/oauth/callback`,
+    redirectUri: `${process.env.BASE_URL}/oauth/callback`,
   });
 
   app.get("/", (req: express.Request, res: express.Response) => {
@@ -126,6 +127,27 @@ if (!oauthEnabled) {
 
   });
 }
+
+app.get("/qr/:type/:room?", async (req: express.Request, res: express.Response) => {
+  const options: QRCode.QRCodeToBufferOptions = {
+    width: 300,
+    color: {
+      dark: process.env.QR_COLOR_DARK || "000000ff",
+      light: process.env.QR_COLOR_LIGHT || "ffffffff"
+    }
+  }
+
+  let path: string;
+  if (req.params.type === "join") {
+    path = 'stimmung';
+  } else {
+    res.sendStatus(400);
+    return;
+  }
+
+  res.set('Content-Type', 'image/png');
+  res.send(await QRCode.toBuffer(`${process.env.BASE_URL}/${path}/${req.params.room || ''}`, options));
+});
 
 app.all("/stimmung/:room?", checkAuth, function (req: express.Request, res: express.Response) {
   res.render("stimmung", {
