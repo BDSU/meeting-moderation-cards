@@ -150,7 +150,7 @@
 
 @media (max-width: 500px) {
   #col-users {
-    display: none;
+    display: none!important;
   }
 }
 

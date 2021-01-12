@@ -196,6 +196,10 @@ $(document).ready(() => {
     countCards();
   });
 
+  $("#modal-share").on("show.bs.modal", function (event) {
+    $("#button-copy-url").text("Link kopieren");
+  });
+
   document.body.addEventListener("keypress", (event) => {
     if (event.key && event.key === "R") {
       $("#resetRow").toggleClass("reset-show");

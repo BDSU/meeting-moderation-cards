@@ -15,6 +15,7 @@
 
   <script src="/js/jquery-3.4.1.min.js"></script>
   <script src="/js/cards.js"></script>
+  <script src="/js/bootstrap.min.js"></script>
   <link href="/css/cards.css" rel="stylesheet" />
 
   <!--Bootstrap core CSS -->
@@ -42,6 +43,25 @@
 </head>
 
 <body class="py-0 text-center align-items-stretch">
+  <div class="modal" id="modal-share" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Teilen</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <img src="/qr/join/{{room}}">
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Schließen</button>
+          <button type="button" class="btn btn-primary" id="button-copy-url" onclick="navigator.clipboard.writeText(window.location.href); this.innerHTML = 'Link kopiert!'">Link kopieren</button>
+        </div>
+      </div>
+    </div>
+  </div>
   <div class="container py-3 d-flex flex-column align-items-stretch">
     <div class="row">
       <div id="counts">
@@ -59,8 +79,11 @@
       <div class="col h-100" id='col-cards'>
         <div id="cards" class="h-100 overflow-auto"></div>
       </div>
-      <div class="col h-100" id='col-users'>
-        <div id="users" class="h-100 overflow-auto"></div>
+      <div class="col h-100 d-flex flex-column align-items-end" id='col-users'>
+        <div id="users" class="mh-100 overflow-auto"></div>
+        <div class="h-auto mt-auto">
+          <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#modal-share">Teilen</button>
+        </div>
       </div>
     </div>
     <div class="row" id="displayAsRow">
