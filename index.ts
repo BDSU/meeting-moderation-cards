@@ -13,6 +13,10 @@ import * as crypto from "crypto";
 import * as QRCode from "qrcode";
 
 dotenv.config();
+
+if (!process.env.PORT) throw new Error('PORT Config Variable unset!. Please set in the .env-File');
+if (!process.env.BASE_URL) throw new Error("BASE_URL config variable unset!. Please set in the .env-File");
+
 let app = express();
 let server = new http.Server(app);
 
