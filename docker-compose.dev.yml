@@ -1,0 +1,12 @@
+version: "3"
+services:
+  app:
+    build: .
+    environment:
+      PORT: 8080
+    ports:
+      - ${PORT:-8080}:8080
+      - 9229:9229
+    volumes:
+      - ./:/app/
+    command: npm run dev
