@@ -10,7 +10,7 @@
   },
   "scripts": {
     "start": "tsc && node index.js",
-    "dev": "ts-node-dev index.ts"
+    "dev": "ts-node-dev --inspect=0.0.0.0:9229 index.ts"
   },
   "dependencies": {
     "@types/body-parser": "^1.19.0",
