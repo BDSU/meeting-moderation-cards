@@ -12,6 +12,7 @@ $(document).ready(() => {
     (location.protocol == "https:" ? "wss://" : "ws://") +
     location.hostname +
     (location.port ? ":" + location.port : "") +
+    '/' + (participate ? "stimmung" : "zuschauer") +
     '/' + roomId;
   let socket = new WebSocket(wsUrl, "stimmung"); // "ws://localhost:8080/"
   socket.onopen = function () {

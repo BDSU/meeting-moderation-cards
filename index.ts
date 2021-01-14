@@ -165,6 +165,20 @@ app.all("/stimmung/:room?", checkAuth, function (req: express.Request, res: expr
   });
 });
 
+app.all("/zuschauer/:room", function (req: express.Request, res: express.Response) {
+  if (!viewRooms[req.params.room]) {
+    res.sendStatus(404);
+    return;
+  }
+  res.render("stimmung", {
+    html_title: process.env.HTML_TITLE || "Stimmungskarten",
+    html_description: process.env.HTML_DESCRIPTION,
+    html_author: process.env.HTML_AUTHOR,
+    room: req.params.room,
+    participate: false,
+  })
+});
+
 server.listen(process.env.PORT, () => {
   console.log(`Server listening on port ${process.env.PORT}`);
 });
@@ -183,6 +197,7 @@ interface Connection {
   name: string;
   connection: websocket.connection;
   id: string;
+  participate: boolean;
 }
 
 interface Card {
@@ -192,34 +207,53 @@ interface Card {
   name: string;
 }
 
-let rooms: Room[] = [];
+let joinRooms: {[roomId: string]: Room} = {};
+let viewRooms: {[roomId: string]: Room} = {};
+let pathMatcher = new RegExp(/^\/(?<type>stimmung|zuschauer)\/(?<roomId>[\w%]*)$/);
 wss.on("request", async function (request) {
-  let name: string, id: string;
-  try {
-    let expressReq = request.httpRequest as express.Request;
-    ({name, id} = await new Promise((resolve, reject) => {
-      sessionParser(expressReq, {} as express.Response, () => {
-        if (expressReq.session && expressReq.session.name && expressReq.session.uid) {
-          resolve({name: expressReq.session.name as string, id: expressReq.session.uid as string});
-        } else {
-          reject("session, name or id not set");
-        }
-      })
-    }));
-  } catch (e) {
-    console.error("could not retrieve user name or id from session! Rejecting request...", request);
-    request.reject(403);
+  if (!pathMatcher.test(request.resourceURL.path)) {
+    request.reject(404);
     return;
   }
-  let connection = request.accept("stimmung", request.origin);
-  const roomId = request.resourceURL.path.substr(1);
-  if (!rooms[roomId]) {
-    rooms[roomId] = {
-      connections: [],
-      cards: [],
-    };
+  const requestParams = request.resourceURL.path.match(pathMatcher);
+  let expressSession: Express.Session = await new Promise((resolve => {
+    let expressReq = request.httpRequest as express.Request;
+    sessionParser(expressReq as express.Request, {} as express.Response, () => {
+      resolve(expressReq.session);
+    });
+  }));
+  const roomId = requestParams.groups.roomId;
+  const participate = requestParams.groups.type === "stimmung";
+  let name: string, id: string, room: Room;
+  if (!!expressSession && participate) {
+    if (expressSession.name && expressSession.uid) {
+      name = expressSession.name;
+      id = expressSession.uid;
+
+      if (!joinRooms[roomId]) {
+        let newRoom = {
+          connections: [],
+          cards: [],
+        };
+        let viewId = crypto.createHash('sha256').update(roomId).digest('hex');
+        joinRooms[roomId] = newRoom;
+        viewRooms[viewId] = newRoom;
+      }
+      room = joinRooms[roomId];
+
+    } else {
+      console.error("could not retrieve user name or id from session! Rejecting request...", request);
+      request.reject(403);
+      return;
+    }
+  } else if (viewRooms[roomId]) {
+    room = viewRooms[roomId];
+  } else {
+    request.reject(404);
+    return;
   }
-  const room: Room = rooms[roomId];
+
+  let connection = request.accept("stimmung", request.origin);
 
   connection.on("message", function (message) {
     let data = JSON.parse(message.utf8Data);
@@ -229,18 +263,23 @@ wss.on("request", async function (request) {
 
     switch (data.type) {
       case "join":
-        room.connections.push({name, connection, id});
-        msg = JSON.stringify({
+        room.connections.push({name, connection, id, participate});
+        let connectedMsg = JSON.stringify({
           type: "connected",
           connected: room.connections.reduce((rv, cv) => {
-            if (!rv.find((item) => item.id == cv.id)) {
+            if (cv.participate && !rv.find((item) => item.id == cv.id)) {
               rv.push({name: cv.name, id: cv.id});
             }
             return rv;
           }, []).map((item) => {
-            return { name: item.name, id: item.id };
+            return {name: item.name, id: item.id};
           }),
         });
+        if (participate) {
+          msg = connectedMsg;
+        } else {
+          connection.send(connectedMsg);
+        }
         connection.send(
           JSON.stringify({
             type: "all",
@@ -252,7 +291,7 @@ wss.on("request", async function (request) {
         msg = '{"type": "msg", "name": "' + name + '", "msg":"' + data.msg + '"}';
         break;
       case "raise":
-        if (!room.cards.find((item) => item.card === data.card && item.id === id)) {
+        if (participate && !room.cards.find((item) => item.card === data.card && item.id === id)) {
           card = {
             type: data.type,
             card: data.card,
@@ -264,7 +303,7 @@ wss.on("request", async function (request) {
         }
         break;
       case "lower":
-        if (room.cards.find((item) => item.card === data.card && item.id === id)) {
+        if (participate && room.cards.find((item) => item.card === data.card && item.id === id)) {
           card = {
             type: data.type,
             card: data.card,
@@ -278,12 +317,16 @@ wss.on("request", async function (request) {
         }
         break;
       case "reset":
-        room.cards = [];
-        msg = JSON.stringify({ type: "reset" });
+        if (participate) {
+          room.cards = [];
+          msg = JSON.stringify({type: "reset"});
+        }
         break;
       case "kick":
-        room.connections.filter((conn) => conn.id == data.id)
-          .map((conn) => conn.connection.close());
+        if (participate) {
+          room.connections.filter((conn) => conn.id == data.id)
+              .map((conn) => conn.connection.close());
+        }
         break;
     }
 
@@ -300,35 +343,38 @@ wss.on("request", async function (request) {
 
   connection.on("close", function (message) {
     room.connections = room.connections.filter(
-      (item) => item.connection != connection
+        (item) => item.connection != connection
     );
-    if (!room.connections.find((item) => item.id == id)) {
-      room.cards = room.cards.filter((item) => item.id !== id);
-    }
 
-    room.connections.map((item) => {
-      if (item.connection && item.connection.send) {
-        item.connection.send(
-          JSON.stringify({
-            type: "all",
-            cards: room.cards,
-          })
-        );
-        item.connection.send(
-          JSON.stringify({
-            type: "connected",
-            connected: room.connections.reduce((rv, cv) => {
-              if (!rv.find((item) => item.id == cv.id)) {
-                rv.push({name: cv.name, id: cv.id});
-              }
-              return rv;
-            }, []).map((item) => {
-              return { name: item.name, id: item.id };
-            }),
-          })
-        );
+    if (participate) {
+      if (!room.connections.find((item) => item.id == id)) {
+        room.cards = room.cards.filter((item) => item.id !== id);
       }
-    });
+
+      room.connections.map((item) => {
+        if (item.connection && item.connection.send) {
+          item.connection.send(
+              JSON.stringify({
+                type: "all",
+                cards: room.cards,
+              })
+          );
+          item.connection.send(
+              JSON.stringify({
+                type: "connected",
+                connected: room.connections.reduce((rv, cv) => {
+                  if (cv.participate && !rv.find((item) => item.id == cv.id)) {
+                    rv.push({name: cv.name, id: cv.id});
+                  }
+                  return rv;
+                }, []).map((item) => {
+                  return {name: item.name, id: item.id};
+                }),
+              })
+          );
+        }
+      });
+    }
   });
 });
 
