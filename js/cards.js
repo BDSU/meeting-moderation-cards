@@ -53,7 +53,7 @@ $(document).ready(() => {
         break;
       case "reset":
         $("#cards").empty();
-        resetOwnCards();
+        if (participate) resetOwnCards();
         countCards();
         document
           .querySelectorAll(`div.user>span.has-raised`)
@@ -69,7 +69,7 @@ $(document).ready(() => {
   };
 
   socket.onclose = function (msg) {
-    resetOwnCards();
+    if (participate) resetOwnCards();
     $("#counts").remove();
     $("#cards").empty();
     $("#col-users").remove();
@@ -85,7 +85,7 @@ $(document).ready(() => {
     } else {
       $(`#${data.id}${data.card}`).remove();
     }
-    if (uid && data.id === uid) setCardButton(data.card, data.type === "raise");
+    if (participate && uid && data.id === uid) setCardButton(data.card, data.type === "raise");
   }
 
   function renderIfUserHasRaised(id) {
@@ -117,28 +117,20 @@ $(document).ready(() => {
     $("#users").empty();
     users.forEach((user) => {
       $("#users").append(
-        `<div class='user' id='${user.id}'>${user.name}<span><a class='kickBtn reset-hide'>X</a></span></div>`
+        `<div class='user' id='${user.id}'>${user.name}${participate ? "<span><a class='kickBtn reset-hide'>X</a></span>": ""}</div>`
       );
     });
-
-    $("#users .kickBtn").each(function () {
-      $(this).on("click", () => kickUser($(this).closest(".user").attr("id")));
-    });
-
-    if (!$("#resetRow").hasClass("reset-hide")) {
-      $(".kickBtn").each(function () {
-        $(this).toggleClass("reset-hide");
+    if (participate) {
+      $("#users .kickBtn").each(function () {
+        $(this).on("click", () => kickUser($(this).closest(".user").attr("id")));
       });
-    }
-  }
 
-  function kickUser(id) {
-    socket.send(
-      JSON.stringify({
-        type: "kick",
-        id,
-      })
-    );
+      if (!$("#resetRow").hasClass("reset-hide")) {
+        $(".kickBtn").each(function () {
+          $(this).toggleClass("reset-hide");
+        });
+      }
+    }
   }
 
   function countCards() {
@@ -147,64 +139,75 @@ $(document).ready(() => {
     });
   }
 
-  function resetOwnCards() {
-    Object.keys(ownColors).forEach((color) => {
-      $(`#${color}Btn`).addClass("btn-color-unselected");
-      $(`#${color}Btn`).removeClass("btn-color-selected");
-      ownColors[color] = false;
-    });
-  }
-
-  function setCardButton(color, raised) {
-    ownColors[color] = raised;
-    let button = $(`#${color}Btn`);
-    let selected = "btn-color-selected";
-    let unselected = "btn-color-unselected";
-    if (raised) {
-      button.addClass(selected);
-      button.removeClass(unselected);
-    } else {
-      button.removeClass(selected);
-      button.addClass(unselected);
-    }
-  }
-
-  Object.keys(ownColors).forEach((color) => {
-    $(`#${color}Btn`).on("click", function (event) {
-      event.preventDefault();
-      socket.send(
-        JSON.stringify({
-          type: ownColors[color] ? "lower" : "raise",
-          card: `${color}`,
-        })
-      );
-    });
-  });
-
-  $("#resetBtn").on("click", function (event) {
-    event.preventDefault();
-    socket.send(
-      JSON.stringify({
-        type: "reset",
-      })
-    );
-    $("#cards").empty();
-    resetOwnCards();
-    countCards();
-  });
-
-  $("#modal-share").on("show.bs.modal", function (event) {
+  $("#modal-share").on("show.bs.modal", function (evt) {
     $("#button-copy-url").text("Link kopieren");
   });
 
-  document.body.addEventListener("keypress", (event) => {
-    if (event.key && event.key === "R") {
-      $("#resetRow").toggleClass("reset-show");
-      $("#resetRow").toggleClass("reset-hide");
-      $("#users .kickBtn").each(function () {
-        $(this).toggleClass("reset-show");
-        $(this).toggleClass("reset-hide");
+  if (participate) {
+    function kickUser(id) {
+      socket.send(
+        JSON.stringify({
+          type: "kick",
+          id,
+        })
+      );
+    }
+
+    function resetOwnCards() {
+      Object.keys(ownColors).forEach((color) => {
+        $(`#${color}Btn`).addClass("btn-color-unselected");
+        $(`#${color}Btn`).removeClass("btn-color-selected");
+        ownColors[color] = false;
       });
     }
-  });
+
+    function setCardButton(color, raised) {
+      ownColors[color] = raised;
+      let button = $(`#${color}Btn`);
+      let selected = "btn-color-selected";
+      let unselected = "btn-color-unselected";
+      if (raised) {
+        button.addClass(selected);
+        button.removeClass(unselected);
+      } else {
+        button.removeClass(selected);
+        button.addClass(unselected);
+      }
+    }
+
+    Object.keys(ownColors).forEach((color) => {
+      $(`#${color}Btn`).on("click", function (event) {
+        event.preventDefault();
+        socket.send(
+          JSON.stringify({
+            type: ownColors[color] ? "lower" : "raise",
+            card: `${color}`,
+          })
+        );
+      });
+    });
+
+    $("#resetBtn").on("click", function (event) {
+      event.preventDefault();
+      socket.send(
+        JSON.stringify({
+          type: "reset",
+        })
+      );
+      $("#cards").empty();
+      resetOwnCards();
+      countCards();
+    });
+
+    document.body.addEventListener("keypress", (event) => {
+      if (event.key && event.key === "R") {
+        $("#resetRow").toggleClass("reset-show");
+        $("#resetRow").toggleClass("reset-hide");
+        $("#users .kickBtn").each(function () {
+          $(this).toggleClass("reset-show");
+          $(this).toggleClass("reset-hide");
+        });
+      }
+    });
+  }
 });

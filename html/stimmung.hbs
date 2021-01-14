@@ -13,7 +13,10 @@
 
   <script type="text/javascript">
     const roomId = '{{room}}';
-    const uid = '{{uid}}';
+    const participate = {{participate}};
+    {{#if uid}}
+      const uid = '{{uid}}';
+    {{/if}}
   </script>
 
   <script src="/js/jquery-3.4.1.min.js"></script>
@@ -73,6 +76,7 @@
         </div>
       </div>
     </div>
+    {{#if participate}}
     <div class="row" id="displayAsRow">
       <p>Du wirst angezeigt als <b id='displayname'>{{name}}</b></p>
     </div>
@@ -91,6 +95,7 @@
         <button id="resetBtn" class="btn btn-danger">Reset</button>
       </div>
     </div>
+    {{/if}}
   </div>
 </body>
 

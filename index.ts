@@ -159,8 +159,9 @@ app.all("/stimmung/:room?", checkAuth, function (req: express.Request, res: expr
     html_description: process.env.HTML_DESCRIPTION,
     html_author: process.env.HTML_AUTHOR,
     name: req.session.name,
-    uid: req.session.uid || '',
+    uid: req.session.uid,
     room: req.params.room || '',
+    participate: true,
   });
 });
 
