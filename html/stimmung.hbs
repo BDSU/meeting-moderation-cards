@@ -3,8 +3,12 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="viewport-fit=cover, width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  {{#if html_description}}
   <meta name="description" content="{{html_description}}" />
+  {{/if}}
+  {{#if html_author}}
   <meta name="author" content="{{html_author}}" />
+  {{/if}}
   <title>{{html_title}}</title>
 
   <script type="text/javascript">

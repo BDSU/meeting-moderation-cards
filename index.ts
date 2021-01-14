@@ -155,13 +155,9 @@ app.get("/qr/:type/:room?", async (req: express.Request, res: express.Response) 
 
 app.all("/stimmung/:room?", checkAuth, function (req: express.Request, res: express.Response) {
   res.render("stimmung", {
-    html_title: process.env.HTML_TITLE
-      ? process.env.HTML_TITLE
-      : "Stimmungskarten",
-    html_description: process.env.HTML_DESCRIPTION
-      ? process.env.HTML_DESCRIPTION
-      : "",
-    html_author: process.env.HTML_AUTHOR ? process.env.HTML_AUTHOR : "",
+    html_title: process.env.HTML_TITLE || "Stimmungskarten",
+    html_description: process.env.HTML_DESCRIPTION,
+    html_author: process.env.HTML_AUTHOR,
     name: req.session.name,
     uid: req.session.uid || '',
     room: req.params.room || '',
