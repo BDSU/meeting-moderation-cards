@@ -134,6 +134,7 @@ if (!oauthEnabled) {
 
 app.get("/qr/:type(join|view)/:room?", async (req: express.Request, res: express.Response) => {
   const options: QRCode.QRCodeToBufferOptions = {
+    errorCorrectionLevel: "L",
     width: 300,
     color: {
       dark: process.env.QR_COLOR_DARK || "000000ff",
