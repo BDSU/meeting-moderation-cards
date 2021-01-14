@@ -18,7 +18,6 @@ $(document).ready(() => {
     socket.send(
       JSON.stringify({
         type: "join",
-        name: $("#displayname").text(),
       })
     );
   };
@@ -66,8 +65,6 @@ $(document).ready(() => {
           renderIfUserHasRaised(user.id);
         });
         break;
-      default:
-        $("#cards").append(msg.data);
     }
   };
 
