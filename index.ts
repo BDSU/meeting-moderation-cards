@@ -132,7 +132,7 @@ if (!oauthEnabled) {
   });
 }
 
-app.get("/qr/:type/:room?", async (req: express.Request, res: express.Response) => {
+app.get("/qr/:type(join|view)/:room?", async (req: express.Request, res: express.Response) => {
   const options: QRCode.QRCodeToBufferOptions = {
     width: 300,
     color: {
@@ -141,26 +141,25 @@ app.get("/qr/:type/:room?", async (req: express.Request, res: express.Response) 
     }
   }
 
-  let path: string;
-  if (req.params.type === "join") {
-    path = 'stimmung';
-  } else {
-    res.sendStatus(400);
-    return;
-  }
-
+  let path = req.params.type === "join" ? "stimmung" : "zuschauer";
+  
   res.set('Content-Type', 'image/png');
   res.send(await QRCode.toBuffer(`${process.env.BASE_URL}/${path}/${req.params.room || ''}`, options));
 });
 
 app.all("/stimmung/:room?", checkAuth, function (req: express.Request, res: express.Response) {
+  let joinId = req.params.room || '';
+  let viewId = crypto.createHash('sha256').update(joinId).digest('hex');
   res.render("stimmung", {
     html_title: process.env.HTML_TITLE || "Stimmungskarten",
     html_description: process.env.HTML_DESCRIPTION,
     html_author: process.env.HTML_AUTHOR,
     name: req.session.name,
     uid: req.session.uid,
-    room: req.params.room || '',
+    joinId,
+    viewId,
+    joinUrl: `${process.env.BASE_URL}/stimmung/${joinId}`,
+    viewUrl: `${process.env.BASE_URL}/zuschauer/${viewId}`,
     participate: true,
   });
 });
@@ -174,7 +173,8 @@ app.all("/zuschauer/:room", function (req: express.Request, res: express.Respons
     html_title: process.env.HTML_TITLE || "Stimmungskarten",
     html_description: process.env.HTML_DESCRIPTION,
     html_author: process.env.HTML_AUTHOR,
-    room: req.params.room,
+    viewId: req.params.room,
+    viewUrl: `${process.env.BASE_URL}/zuschauer/${req.params.room}`,
     participate: false,
   })
 });

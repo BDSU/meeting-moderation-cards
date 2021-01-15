@@ -12,10 +12,19 @@
   <title>{{html_title}}</title>
 
   <script type="text/javascript">
-    const roomId = '{{room}}';
+    const joinId = '{{joinId}}';
+    {{#if viewId}}
+      const viewId = '{{viewId}}';
+    {{/if}}
     const participate = {{participate}};
     {{#if uid}}
       const uid = '{{uid}}';
+    {{/if}}
+    {{#if joinUrl}}
+      const joinUrl = '{{joinUrl}}';
+    {{/if}}
+    {{#if viewUrl}}
+      const viewUrl = '{{viewUrl}}';
     {{/if}}
   </script>
 
@@ -34,7 +43,7 @@
 
 <body class="py-0 text-center align-items-stretch">
   <div class="modal" id="modal-share" tabindex="-1">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-lg">
       <div class="modal-content">
         <div class="modal-header">
           <h5 class="modal-title">Teilen</h5>
@@ -43,11 +52,27 @@
           </button>
         </div>
         <div class="modal-body">
-          <img src="/qr/join/{{room}}">
+          <div class="container-fluid">
+            <div class="row justify-content-around">
+              {{#if joinUrl}}
+                <div class="col">
+                  <h6 class="modal-title">Teilnehmen</h6>
+                  <div><img class="img-fluid" src="/qr/join/{{joinId}}"></div>
+                  <div><button type="button" class="btn btn-primary btn-copy-url" onclick="navigator.clipboard.writeText(joinUrl); this.textContent = 'Link kopiert!'">Link kopieren</button></div>
+                </div>
+              {{/if}}
+              {{#if viewUrl}}
+                <div class="col">
+                  <h6 class="modal-title">Zusehen</h6>
+                  <div><img class="img-fluid" src="/qr/view/{{viewId}}"></div>
+                  <div><button type="button" class="btn btn-primary btn-copy-url" onclick="navigator.clipboard.writeText(viewUrl); this.textContent = 'Link kopiert!'">Link kopieren</button></div>
+                </div>
+              {{/if}}
+            </div>
+          </div>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-dismiss="modal">Schließen</button>
-          <button type="button" class="btn btn-primary" id="button-copy-url" onclick="navigator.clipboard.writeText(window.location.href); this.innerHTML = 'Link kopiert!'">Link kopieren</button>
         </div>
       </div>
     </div>

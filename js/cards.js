@@ -13,7 +13,7 @@ $(document).ready(() => {
     location.hostname +
     (location.port ? ":" + location.port : "") +
     '/' + (participate ? "stimmung" : "zuschauer") +
-    '/' + roomId;
+    '/' + (participate ? joinId : viewId);
   let socket = new WebSocket(wsUrl, "stimmung"); // "ws://localhost:8080/"
   socket.onopen = function () {
     socket.send(
@@ -140,8 +140,10 @@ $(document).ready(() => {
     });
   }
 
-  $("#modal-share").on("show.bs.modal", function (evt) {
-    $("#button-copy-url").text("Link kopieren");
+  $("#modal-share").on("hidden.bs.modal", function (evt) {
+    $(".btn-copy-url").each((idx, elem) => {
+      elem.innerText = "Link kopieren";
+    });
   });
 
   if (participate) {
