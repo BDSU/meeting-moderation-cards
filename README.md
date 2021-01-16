@@ -21,6 +21,7 @@ Run ```npm start```.
 * ```HTML_DESCRIPTION```: The HTML description of the app.
 * ```NAME_PATTERN```: The pattern the names have to match to join a session. Default is ```.*```
 * ```BASE_URL```: The base URL containing request protocol (http | https), domain and optionally port, eg. ```https://example.com:8443```
+* ```TRUST_PROXY```: Set trusted proxy IP(-Ranges). For more information see [Express behind proxies](http://expressjs.com/en/guide/behind-proxies.html)
 * `QR_COLOR_*`
   * ```QR_COLOR_DARK```: The Color of the dark QR-Code-Rectangles in RGBA-Hex-Notation | Default: ```000000FF```
   * ```QR_COLOR_LIGHT```: The color of the light QR-Code-Rectangles in RGBA-Hex-Notation | Default: ```FFFFFFFF```

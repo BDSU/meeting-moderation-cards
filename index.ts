@@ -21,6 +21,7 @@ let app = express();
 let server = new http.Server(app);
 
 app.use(morgan("common"));
+app.set('trust proxy', process.env.TRUST_PROXY || false);
 
 let sessionParser = session({
   cookie: {
