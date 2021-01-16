@@ -23,6 +23,11 @@ let server = new http.Server(app);
 app.use(morgan("common"));
 
 let sessionParser = session({
+  cookie: {
+    httpOnly: true,
+    sameSite: 'none',
+    secure: true,
+  },
   resave: false,
   saveUninitialized: false,
   secret: process.env.COOKIE_SECRET,
@@ -179,6 +184,13 @@ app.all("/zuschauer/:room", function (req: express.Request, res: express.Respons
     participate: false,
   })
 });
+
+app.get("/teams/config/", function (req: express.Request, res: express.Response) {
+  res.render("teams-config", {
+    html_title: process.env.HTML_TITLE || "Stimmungskarten",
+    base_url: process.env.BASE_URL,
+  })
+})
 
 server.listen(process.env.PORT, () => {
   console.log(`Server listening on port ${process.env.PORT}`);
