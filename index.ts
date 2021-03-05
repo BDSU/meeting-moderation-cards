@@ -47,6 +47,7 @@ let sessionParser = session({
 app.use(sessionParser);
 
 app.use(bodyParser.urlencoded({ extended: false }));
+app.use("/js/teams.js", express.static(__dirname + "/node_modules/@microsoft/teams-js/dist/MicrosoftTeams.min.js"));
 app.use("/js", express.static(__dirname + "/js"));
 app.use("/css", express.static(__dirname + "/css"));
 
