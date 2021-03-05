@@ -150,3 +150,6 @@ temp/
 
 #TypeScript Compile Output
 index.js
+
+# HTTPS cert
+*.pem

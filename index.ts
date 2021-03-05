@@ -1,6 +1,8 @@
 import * as dotenv from "dotenv";
 import * as express from "express";
+import { readFileSync } from "fs";
 import * as http from "http";
+import * as https from "https";
 import * as handlebars from "express-handlebars";
 import * as popsicle from "popsicle";
 import * as ClientOAuth2 from "client-oauth2";
@@ -18,7 +20,15 @@ if (!process.env.PORT) throw new Error('PORT Config Variable unset!. Please set 
 if (!process.env.BASE_URL) throw new Error("BASE_URL config variable unset!. Please set in the .env-File");
 
 let app = express();
-let server = new http.Server(app);
+let server: http.Server;
+
+if (process.env.HTTPS_CERT_PATH && process.env.HTTPS_KEY_PATH) {
+  const key = readFileSync(process.env.HTTPS_KEY_PATH);
+  const cert = readFileSync(process.env.HTTPS_CERT_PATH);
+  server = new https.Server({key, cert}, app);
+} else {
+  server = new http.Server(app);
+}
 
 app.use(morgan("common"));
 app.set('trust proxy', process.env.TRUST_PROXY || false);
@@ -26,7 +36,7 @@ app.set('trust proxy', process.env.TRUST_PROXY || false);
 let sessionParser = session({
   cookie: {
     httpOnly: true,
-    sameSite: 'none',
+    sameSite: <'strict' | 'lax' | 'none'>process.env.COOKIE_SAME_SITE,
     secure: true,
   },
   resave: false,
