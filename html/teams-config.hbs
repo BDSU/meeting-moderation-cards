@@ -36,7 +36,10 @@
         <p>
           <input type="radio" id="manual_id" name="id_mode" value="manual_id" onclick="document.getElementById('room_id').focus()">
           <label for="room_id">Raum-ID setzen:</label>
-          <input id="room_id" type="text" name="room_id" onclick="document.getElementById('manual_id').checked = true">
+          <div>
+            <em>{{base_url}}/stimmung/</em>
+            <input id="room_id" type="text" placeholder="Raumname" name="room_id" onclick="document.getElementById('manual_id').checked = true">
+          </div>
         </p>
       </fieldset>
       <fieldset>
