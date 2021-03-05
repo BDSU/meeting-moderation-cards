@@ -81,7 +81,15 @@ function checkAuth(req: express.Request, res: express.Response, next: express.Ne
 
   if (!req.session.name) {
     req.session.redirectUri = req.originalUrl;
-    res.redirect("/");
+    if (req.params.isTeams) {
+      res.render("teams-login", {
+        html_title: process.env.HTML_TITLE ? process.env.HTML_TITLE : "Stimmungskarten",
+        html_description: process.env.HTML_DESCRIPTION ? process.env.HTML_DESCRIPTION : "",
+        html_author: process.env.HTML_AUTHOR ? process.env.HTML_AUTHOR : "",
+      });
+    } else {
+      res.redirect("/");
+    }
   } else {
     next();
   }
@@ -165,7 +173,11 @@ app.get("/qr/:type(join|view)/:room?", async (req: express.Request, res: express
   res.send(await QRCode.toBuffer(`${process.env.BASE_URL}/${path}/${req.params.room || ''}`, options));
 });
 
-app.all("/stimmung/:room?", checkAuth, function (req: express.Request, res: express.Response) {
+app.all("/teams/auth", checkAuth, function (req: express.Request, res: express.Response) {
+  res.render("teams-auth");
+});
+
+app.all(["/stimmung/:room?", "/:isTeams(teams)/stimmung/:room?"], checkAuth, function (req: express.Request, res: express.Response) {
   let joinId = req.params.room || '';
   let viewId = crypto.createHash('sha256').update(joinId).digest('hex');
   res.render("stimmung", {
@@ -182,7 +194,7 @@ app.all("/stimmung/:room?", checkAuth, function (req: express.Request, res: expr
   });
 });
 
-app.all("/zuschauer/:room", function (req: express.Request, res: express.Response) {
+app.all(["/zuschauer/:room", "/:isTeams(teams)/zuschauer/:room"], function (req: express.Request, res: express.Response) {
   if (!viewRooms[req.params.room]) {
     res.sendStatus(404);
     return;

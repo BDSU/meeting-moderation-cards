@@ -65,7 +65,7 @@
           roomId.then((roomId) =>{
             microsoftTeams.settings.setSettings({
               websiteUrl: `{{base_url}}/${elems.room_mode.value}/${roomId}`,
-              contentUrl: `{{base_url}}/${elems.room_mode.value}/${roomId}`,
+              contentUrl: `{{base_url}}/teams/${elems.room_mode.value}/${roomId}`,
               suggestedDisplayName: "Stimmungskarten"
             })
             saveEvent.notifySuccess();
