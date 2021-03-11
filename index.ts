@@ -97,6 +97,8 @@ function checkAuth(req: express.Request, res: express.Response, next: express.Ne
 
 if (!oauthEnabled) {
   app.get("/", function (req: express.Request, res: express.Response) {
+    const redirectUri = req.session.redirectUri || '/stimmung';
+    req.session.redirectUri = undefined;
     res.render("join", {
       html_title: process.env.HTML_TITLE
       ? process.env.HTML_TITLE
@@ -107,7 +109,7 @@ if (!oauthEnabled) {
       html_author: process.env.HTML_AUTHOR ? process.env.HTML_AUTHOR : "",
       name_pattern: process.env.NAME_PATTERN ? process.env.NAME_PATTERN : ".*",
       name: req.session.name,
-      action: req.session.redirectUri || '/stimmung',
+      action: redirectUri,
     });
   });
 } else {
@@ -148,7 +150,10 @@ if (!oauthEnabled) {
           .trim()
       ).digest('hex');
 
-      return res.redirect(req.session.redirectUri || "/stimmung");
+      const redirectUri = req.session.redirectUri || '/stimmung';
+      req.session.redirectUri = undefined;
+
+      return res.redirect(redirectUri);
     } catch (exception) {
       // TODO: do actual error handling
       return res.redirect("/");
