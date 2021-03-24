@@ -59,7 +59,7 @@
           if (elems.room_mode.value === "zuschauer") {
             roomId = hashId(elems.room_id.value);
           } else {
-            roomId = Promise.resolve(elems.id_mode.value === "manual_id" ? elems.room_id.value : "{meetingId}");
+            roomId = Promise.resolve(elems.id_mode.value === "manual_id" ? elems.room_id.value : hashId(Date.now() * Math.random()));
           }
           roomId.then((roomId) =>{
             microsoftTeams.settings.setSettings({
