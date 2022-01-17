@@ -2,6 +2,7 @@
 .env*
 .git*
 docker-compose.yml
+docker-compose.dev.yml
 Dockerfile
 node_modules
 README.md
