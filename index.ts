@@ -14,6 +14,15 @@ import * as websocket from "websocket";
 import * as crypto from "crypto";
 import * as QRCode from "qrcode";
 
+// Use 'Interface Merging' as described in docs to extend session properties
+declare module 'express-session' {
+  interface SessionData {
+    name: string
+    uid: string
+    redirectUri: string
+  }
+}
+
 dotenv.config();
 
 if (!process.env.PORT) throw new Error('PORT Config Variable unset!. Please set in the .env-File');
@@ -132,10 +141,11 @@ if (!oauthEnabled) {
       const user = await oauthClient.code.getToken(req.originalUrl);
       const requestOptions = user.sign({
         url: process.env.OAUTH_USER_ENDPOINT,
+        headers: {},
       });
 
-      const response = await popsicle.request(requestOptions).use(popsicle.plugins.parse('json'));
-      const userData = response.body;
+      const response = await popsicle.fetch(requestOptions.url, {headers: requestOptions.headers})
+      const userData = await response.json();
       const hash = crypto.createHash('sha256');
 
       req.session.name = process.env.OAUTH_USER_NAME_PATH.split("|")
@@ -258,7 +268,7 @@ wss.on("request", async function (request) {
     return;
   }
   const requestParams = request.resourceURL.path.match(pathMatcher);
-  let expressSession: Express.Session = await new Promise((resolve => {
+  let expressSession: session.Session & Partial<session.SessionData> = await new Promise((resolve => {
     let expressReq = request.httpRequest as express.Request;
     sessionParser(expressReq as express.Request, {} as express.Response, () => {
       resolve(expressReq.session);
@@ -297,7 +307,7 @@ wss.on("request", async function (request) {
 
   let connection = request.accept("stimmung", request.origin);
 
-  connection.on("message", function (message) {
+  connection.on("message", function (message: websocket.IUtf8Message) {
     let data = JSON.parse(message.utf8Data);
     // console.log(`Inbound: ${message.utf8Data}`);
     let card: Card;
