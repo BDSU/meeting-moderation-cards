@@ -1,9 +1,9 @@
-FROM node
+FROM node:current-alpine
 
 USER node
 
 ADD --chown=node:node . /app/
 WORKDIR /app/
-RUN npm install --only=prod
+RUN npm ci --only=prod
 
 CMD npm start
