@@ -31,12 +31,15 @@ if (!process.env.BASE_URL) throw new Error("BASE_URL config variable unset!. Ple
 let app = express();
 let server: http.Server;
 
+let isSecure: boolean;
 if (process.env.HTTPS_CERT_PATH && process.env.HTTPS_KEY_PATH) {
   const key = readFileSync(process.env.HTTPS_KEY_PATH);
   const cert = readFileSync(process.env.HTTPS_CERT_PATH);
   server = new https.Server({key, cert}, app);
+  isSecure = true;
 } else {
   server = new http.Server(app);
+  isSecure = !!process.env.TRUST_PROXY;
 }
 
 app.use(morgan("common"));
@@ -46,7 +49,7 @@ let sessionParser = session({
   cookie: {
     httpOnly: true,
     sameSite: <'strict' | 'lax' | 'none'>process.env.COOKIE_SAME_SITE,
-    secure: true,
+    secure: isSecure,
   },
   resave: false,
   saveUninitialized: false,
