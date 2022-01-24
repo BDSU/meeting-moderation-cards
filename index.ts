@@ -188,7 +188,7 @@ app.get("/qr/:type(join|view)/:room?", async (req: express.Request, res: express
   let path = req.params.type === "join" ? "stimmung" : "zuschauer";
   
   res.set('Content-Type', 'image/png');
-  res.send(await QRCode.toBuffer(`${process.env.BASE_URL}/${path}/${req.params.room || ''}`, options));
+  res.send(await QRCode.toBuffer(`${process.env.BASE_URL}/${path}/${encodeURIComponent(req.params.room || '')}`, options));
 });
 
 app.all("/teams/auth", checkAuth, function (req: express.Request, res: express.Response) {
@@ -204,9 +204,9 @@ app.all(["/stimmung/:room?", "/:isTeams(teams)/stimmung/:room?"], checkAuth, fun
     html_author: process.env.HTML_AUTHOR,
     name: req.session.name,
     uid: req.session.uid,
-    joinId,
+    joinId: encodeURIComponent(joinId),
     viewId,
-    joinUrl: `${process.env.BASE_URL}/stimmung/${joinId}`,
+    joinUrl: `${process.env.BASE_URL}/stimmung/${encodeURIComponent(joinId)}`,
     viewUrl: `${process.env.BASE_URL}/zuschauer/${viewId}`,
     participate: true,
   });
@@ -241,6 +241,7 @@ server.listen(process.env.PORT, () => {
 let wss = new websocket.server({
   httpServer: server,
   autoAcceptConnections: false,
+  keepaliveInterval: 5000,
 });
 
 interface Room {
@@ -264,7 +265,7 @@ interface Card {
 
 let joinRooms: {[roomId: string]: Room} = {};
 let viewRooms: {[roomId: string]: Room} = {};
-let pathMatcher = new RegExp(/^\/(?<type>stimmung|zuschauer)\/(?<roomId>[\w%]*)$/);
+let pathMatcher = new RegExp(/^\/(?<type>stimmung|zuschauer)\/(?<roomId>[\w%\.]*)$/);
 wss.on("request", async function (request) {
   if (!pathMatcher.test(request.resourceURL.path)) {
     request.reject(404);
