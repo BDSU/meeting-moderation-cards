@@ -1,0 +1,79 @@
+<html lang="de">
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="viewport-fit=cover, width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>{{html_title}}</title>
+    <script src='/js/teams.js'></script>
+    <script>
+      function setAutoIdMode (auto) {
+        document.getElementById("auto_id").disabled = !auto;
+        if (!auto) document.getElementById("manual_id").checked = true;
+      }
+      async function hashId(id) {
+        const inBuff = new TextEncoder().encode(id);
+        const hashBuffer = await crypto.subtle.digest("SHA-256", inBuff);
+        const hashArray = Array.from(new Uint8Array(hashBuffer));
+        const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+
+        return hashHex;
+      }
+    </script>
+  </head>
+
+  <body>
+    <form id="room_settings">
+      <fieldset>
+        <legend>Raumoptionen</legend>
+        <p>
+          <input type="radio" id="auto_id" name="id_mode" value="auto_id" checked>
+          <label for="auto_id">Raum-ID automatisch wählen</label>
+        </p>
+        <p>
+          <input type="radio" id="manual_id" name="id_mode" value="manual_id" onclick="document.getElementById('room_id').focus()">
+          <label for="room_id">Raum-ID setzen:</label>
+          <div>
+            <em>{{base_url}}/stimmung/</em>
+            <input id="room_id" type="text" placeholder="Raumname" name="room_id" onclick="document.getElementById('manual_id').checked = true">
+          </div>
+        </p>
+      </fieldset>
+      <fieldset>
+        <legend>Teilnahmeoptionen</legend>
+        <p>
+          <input type="radio" id="join_room" name="room_mode" value="stimmung" onclick="setAutoIdMode(true)" checked>
+          <label for="join_room">Benutzer teilnehmen lassen</label>
+        </p>
+        <p>
+          <input type="radio" id="view_room" name="room_mode" value="zuschauer" onclick="setAutoIdMode(false)">
+          <label for="view_room">Benutzer zusehen lassen</label>
+        </p>
+      </fieldset>
+    </form>
+    <script>
+      microsoftTeams.initialize();
+      let save = () => {
+        microsoftTeams.settings.registerOnSaveHandler((saveEvent) => {
+          let elems = document.getElementById("room_settings").elements;
+          let roomId;
+          if (elems.room_mode.value === "zuschauer") {
+            roomId = hashId(elems.room_id.value);
+          } else {
+            roomId = Promise.resolve(elems.id_mode.value === "manual_id" ? elems.room_id.value : hashId(Date.now() * Math.random()));
+          }
+          roomId.then((roomId) =>{
+            microsoftTeams.settings.setSettings({
+              websiteUrl: `{{base_url}}/${elems.room_mode.value}/${roomId}`,
+              contentUrl: `{{base_url}}/teams/${elems.room_mode.value}/${roomId}`,
+              suggestedDisplayName: "Stimmungskarten"
+            })
+            saveEvent.notifySuccess();
+          }, () => saveEvent.notifyFailure())
+        });
+      }
+      save();
+      microsoftTeams.settings.setValidityState(true);
+    </script>
+  </body>
+
+</html>

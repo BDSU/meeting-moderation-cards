@@ -7,7 +7,6 @@
     />
     <meta name="description" content="{{html_description}}" />
     <meta name="author" content="{{html_author}}" />
-    <meta name="generator" content="Jekyll v3.8.5" />
     <title>{{html_title}}</title>
 
     <script src="/js/jquery-3.4.1.min.js"></script>
@@ -20,29 +19,13 @@
       crossorigin="anonymous"
     />
 
-    <style>
-      .bd-placeholder-img {
-        font-size: 1.125rem;
-        text-anchor: middle;
-        -webkit-user-select: none;
-        -moz-user-select: none;
-        -ms-user-select: none;
-        user-select: none;
-      }
-
-      @media (min-width: 768px) {
-        .bd-placeholder-img-lg {
-          font-size: 3.5rem;
-        }
-      }
-    </style>
     <!-- Custom styles for this template -->
     <link href="/css/signin.css" rel="stylesheet" />
   </head>
   <body class="text-center">
     <div class="container">
       <div class="row">
-        <form class="form-signin" id="accForm" action="/stimmung" method="POST">
+        <form class="form-signin" id="accForm" action="{{action}}" method="POST">
           <label for="name" class="sr-only">Anzeigename</label>
           <input
             type="text"

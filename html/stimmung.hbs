@@ -2,42 +2,82 @@
 
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+  <meta name="viewport" content="viewport-fit=cover, width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  {{#if html_description}}
   <meta name="description" content="{{html_description}}" />
+  {{/if}}
+  {{#if html_author}}
   <meta name="author" content="{{html_author}}" />
-  <meta name="generator" content="Jekyll v3.8.5" />
+  {{/if}}
   <title>{{html_title}}</title>
+
+  <script type="text/javascript">
+    const joinId = '{{joinId}}';
+    {{#if viewId}}
+      const viewId = '{{viewId}}';
+    {{/if}}
+    const participate = {{participate}};
+    {{#if uid}}
+      const uid = '{{uid}}';
+    {{/if}}
+    {{#if joinUrl}}
+      const joinUrl = '{{joinUrl}}';
+    {{/if}}
+    {{#if viewUrl}}
+      const viewUrl = '{{viewUrl}}';
+    {{/if}}
+  </script>
 
   <script src="/js/jquery-3.4.1.min.js"></script>
   <script src="/js/cards.js"></script>
+  <script src="/js/bootstrap.min.js"></script>
   <link href="/css/cards.css" rel="stylesheet" />
 
   <!--Bootstrap core CSS -->
   <link href="/css/bootstrap.min.css" rel="stylesheet"
     integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous" />
 
-  <style>
-    .bd-placeholder-img {
-      font-size: 1.125rem;
-      text-anchor: middle;
-      -webkit-user-select: none;
-      -moz-user-select: none;
-      -ms-user-select: none;
-      user-select: none;
-    }
-
-    @media (min-width: 768px) {
-      .bd-placeholder-img-lg {
-        font-size: 3.5rem;
-      }
-    }
-  </style>
   <!-- Custom styles for this template -->
   <link href="/css/signin.css" rel="stylesheet" />
 </head>
 
-<body class="text-center">
-  <div class="container">
+<body class="py-0 text-center align-items-stretch">
+  <div class="modal" id="modal-share" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Teilen</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <div class="container-fluid">
+            <div class="row justify-content-around">
+              {{#if joinUrl}}
+                <div class="col">
+                  <h6 class="modal-title">Teilnehmen</h6>
+                  <div><img class="img-fluid" src="/qr/join/{{joinId}}"></div>
+                  <div><button type="button" class="btn btn-primary btn-copy-url" onclick="navigator.clipboard.writeText(joinUrl); this.textContent = 'Link kopiert!'">Link kopieren</button></div>
+                </div>
+              {{/if}}
+              {{#if viewUrl}}
+                <div class="col">
+                  <h6 class="modal-title">Zusehen</h6>
+                  <div><img class="img-fluid" src="/qr/view/{{viewId}}"></div>
+                  <div><button type="button" class="btn btn-primary btn-copy-url" onclick="navigator.clipboard.writeText(viewUrl); this.textContent = 'Link kopiert!'">Link kopieren</button></div>
+                </div>
+              {{/if}}
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Schließen</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="container py-3 d-flex flex-column align-items-stretch">
     <div class="row">
       <div id="counts">
         <p>
@@ -49,14 +89,18 @@
         </p>
       </div>
     </div>
-    <div class="row">
-      <div class="col" id='col-cards'>
-        <div id="cards"></div>
+    <div class="row flex-grow-1 flex-shrink-1 h-100 overflow-hidden">
+      <div class="col h-100" id='col-cards'>
+        <div id="cards" class="h-100 overflow-auto"></div>
       </div>
-      <div class="col" id='col-users'>
-        <div id="users"></div>
+      <div class="col h-100 d-flex flex-column align-items-end" id='col-users'>
+        <div id="users" class="mh-100 overflow-auto"></div>
+        <div class="h-auto mt-auto">
+          <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#modal-share">Teilen</button>
+        </div>
       </div>
     </div>
+    {{#if participate}}
     <div class="row" id="displayAsRow">
       <p>Du wirst angezeigt als <b id='displayname'>{{name}}</b></p>
     </div>
@@ -74,6 +118,7 @@
         <button id="resetBtn" class="btn btn-danger">Reset</button>
       </div>
     </div>
+    {{/if}}
   </div>
 </body>
 

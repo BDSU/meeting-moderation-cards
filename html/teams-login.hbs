@@ -1,0 +1,54 @@
+<html lang="de">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <meta name="description" content="{{html_description}}" />
+    <meta name="author" content="{{html_author}}" />
+    <title>{{html_title}}</title>
+
+    <!--Bootstrap core CSS -->
+    <link
+      href="/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T"
+      crossorigin="anonymous"
+    />
+
+    <!-- Custom styles for this template -->
+    <link href="/css/signin.css" rel="stylesheet" />
+  </head>
+  <body>
+    <div class="container">
+      <div class="row">
+        <div class="col">
+          <button class="btn btn-lg btn-primary btn-block">Einloggen</button>
+          <div class="alert alert-danger fail-message d-none">
+            Leider ist ein Fehler aufgetreten.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src='/js/teams.js'></script>
+    <script>
+      microsoftTeams.initialize();
+      document.querySelector('button').addEventListener('click', () => {
+        const alert = document.querySelector('.fail-message');
+
+        alert.classList.add('d-none');
+        microsoftTeams.authentication.authenticate({
+          url: window.location.origin + "/teams/auth",
+          width: 800,
+          height: 600,
+          successCallback: function (result) {
+            window.location.reload();
+          },
+          failureCallback: function (reason) {
+            alert.classList.remove('d-none');
+            console.error(reason);
+          },
+        });
+      });
+    </script>
+  </body>
+</html>

@@ -1,9 +1,3 @@
-#cards {
-  width: 100%;
-  height: calc(90vh - 40px - 30px - 90px);
-  overflow-y: auto;
-}
-
 .card-common {
   text-align: center;
   margin: 10px 0;
@@ -135,6 +129,10 @@
   visibility: hidden;
 }
 
+#resetRow.reset-hide {
+  display: none;
+}
+
 #resetBtn {
   width: 100%;
   padding: 0;
@@ -148,13 +146,8 @@
 
 @media (max-width: 500px) {
   #col-users {
-    display: none;
+    display: none!important;
   }
-}
-
-#users {
-  height: calc(90vh - 40px - 30px - 90px);
-  overflow-y: auto;
 }
 
 .user {
@@ -168,4 +161,8 @@
 
 .disconnected {
   margin-top: 20px;
+}
+
+.row {
+  flex-shrink: 0;
 }
