@@ -12,8 +12,10 @@ $(document).ready(() => {
     (location.protocol == "https:" ? "wss://" : "ws://") +
     location.hostname +
     (location.port ? ":" + location.port : "") +
-    '/' + (participate ? "stimmung" : "zuschauer") +
-    '/' + (participate ? joinId : viewId);
+    "/" +
+    (participate ? "stimmung" : "zuschauer") +
+    "/" +
+    (participate ? joinId : viewId);
   let socket = new WebSocket(wsUrl, "stimmung"); // "ws://localhost:8080/"
   socket.onopen = function () {
     socket.send(
@@ -95,7 +97,8 @@ $(document).ready(() => {
     } else {
       $(`#${data.id}${data.card}`).remove();
     }
-    if (participate && uid && data.id === uid) setCardButton(data.card, data.type === "raise");
+    if (participate && uid && data.id === uid)
+      setCardButton(data.card, data.type === "raise");
   }
 
   function renderIfUserHasRaised(id) {
@@ -132,13 +135,13 @@ $(document).ready(() => {
         }` +
           `${
             participate
-              ? "<span><a class='kickBtn clickable reset-hide'><span class='kickIcon'></span></a></span>"
+              ? "<span><a class='kickBtn clickable reset-hide'><span class='kickIcon' title='Aus Raum entfernen'></span></a></span>"
               : ""
           }` + // TODO optimize: direct render instead of toggling
           `${
             user.host
-              ? "<span><a class='hostBtn hostBtn-demote reset-hide clickable'><span class='demoteIcon'></a></span>"
-              : "<span><a class='hostBtn hostBtn-promote reset-hide clickable'><span class='promoteIcon'></a></span>"
+              ? "<span><a class='hostBtn hostBtn-demote reset-hide clickable'><span class='demoteIcon' title='Zu Teilnehmer:in machen'></a></span>"
+              : "<span><a class='hostBtn hostBtn-promote reset-hide clickable'><span class='promoteIcon' title='Zum Host machen'></a></span>"
           }` +
           `</div>`
       );
@@ -270,6 +273,5 @@ $(document).ready(() => {
         })
       );
     });
-
   }
 });
