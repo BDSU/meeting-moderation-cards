@@ -149,8 +149,9 @@
 }
 
 @media (max-width: 500px) {
-  #col-users {
-    display: none!important;
+  #col-users,
+  #resetRow {
+    display: none !important;
   }
 }
 
@@ -159,7 +160,7 @@
 }
 
 .kickBtn {
-  color: var(--danger)!important;
+  color: var(--danger) !important;
   margin-left: 5px;
 }
 
