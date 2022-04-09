@@ -12,8 +12,10 @@ $(document).ready(() => {
     (location.protocol == "https:" ? "wss://" : "ws://") +
     location.hostname +
     (location.port ? ":" + location.port : "") +
-    '/' + (participate ? "stimmung" : "zuschauer") +
-    '/' + (participate ? joinId : viewId);
+    "/" +
+    (participate ? "stimmung" : "zuschauer") +
+    "/" +
+    (participate ? joinId : viewId);
   let socket = new WebSocket(wsUrl, "stimmung"); // "ws://localhost:8080/"
   socket.onopen = function () {
     socket.send(
@@ -61,6 +63,14 @@ $(document).ready(() => {
           .forEach((dot) => dot.remove());
         break;
       case "connected":
+        if (participate) {
+          let self = data.connected.filter((c) => c.id === uid);
+          if (self && self.length === 1) {
+            renderHostTools(self[0].host);
+          } else {
+            renderHostTools(false); // force hide
+          }
+        }
         renderUsers(data);
         data.connected.forEach((user) => {
           renderIfUserHasRaised(user.id);
@@ -77,6 +87,7 @@ $(document).ready(() => {
     $("#cards").append(
       '<div class="disconnected">Deine Verbindung wurde beendet! <a href="javascript:window.location.reload()">Seite neu laden</a></div>'
     );
+    renderHostTools(false);
   };
 
   function renderCard(data) {
@@ -86,7 +97,8 @@ $(document).ready(() => {
     } else {
       $(`#${data.id}${data.card}`).remove();
     }
-    if (participate && uid && data.id === uid) setCardButton(data.card, data.type === "raise");
+    if (participate && uid && data.id === uid)
+      setCardButton(data.card, data.type === "raise");
   }
 
   function renderIfUserHasRaised(id) {
@@ -118,19 +130,64 @@ $(document).ready(() => {
     $("#users").empty();
     users.forEach((user) => {
       $("#users").append(
-        `<div class='user' id='${user.id}'>${user.name}${participate ? "<span><a class='kickBtn reset-hide'>X</a></span>": ""}</div>`
+        `<div class='user' id='${user.id}'>${user.name}${
+          user.host ? " (Host)" : ""
+        }` +
+          `${
+            participate
+              ? "<span><a class='kickBtn clickable reset-hide'><span class='kickIcon' title='Aus Raum entfernen'></span></a></span>"
+              : ""
+          }` + // TODO optimize: direct render instead of toggling
+          `${
+            user.host
+              ? "<span><a class='hostBtn hostBtn-demote reset-hide clickable'><span class='demoteIcon' title='Zu Teilnehmer:in machen'></a></span>"
+              : "<span><a class='hostBtn hostBtn-promote reset-hide clickable'><span class='promoteIcon' title='Zum Host machen'></a></span>"
+          }` +
+          `</div>`
       );
     });
     if (participate) {
       $("#users .kickBtn").each(function () {
-        $(this).on("click", () => kickUser($(this).closest(".user").attr("id")));
+        $(this).on("click", () =>
+          kickUser($(this).closest(".user").attr("id"))
+        );
+      });
+
+      $("#users .hostBtn-promote").each(function () {
+        $(this).on("click", () =>
+          promoteUser($(this).closest(".user").attr("id"))
+        );
+      });
+
+      $("#users .hostBtn-demote").each(function () {
+        $(this).on("click", () =>
+          demoteUser($(this).closest(".user").attr("id"))
+        );
       });
 
       if (!$("#resetRow").hasClass("reset-hide")) {
-        $(".kickBtn").each(function () {
+        $(".kickBtn, .hostBtn").each(function () {
           $(this).toggleClass("reset-hide");
         });
       }
+    }
+  }
+
+  function renderHostTools(display) {
+    if (display) {
+      $("#resetRow").addClass("reset-show");
+      $("#resetRow").removeClass("reset-hide");
+      $("#users .kickBtn, #users .hostBtn").each(function () {
+        $(this).addClass("reset-show");
+        $(this).removeClass("reset-hide");
+      });
+    } else {
+      $("#resetRow").removeClass("reset-show");
+      $("#resetRow").addClass("reset-hide");
+      $("#users .kickBtn, #users .hostBtn").each(function () {
+        $(this).removeClass("reset-show");
+        $(this).addClass("reset-hide");
+      });
     }
   }
 
@@ -151,6 +208,24 @@ $(document).ready(() => {
       socket.send(
         JSON.stringify({
           type: "kick",
+          id,
+        })
+      );
+    }
+
+    function promoteUser(id) {
+      socket.send(
+        JSON.stringify({
+          type: "promote",
+          id,
+        })
+      );
+    }
+
+    function demoteUser(id) {
+      socket.send(
+        JSON.stringify({
+          type: "demote",
           id,
         })
       );
@@ -197,20 +272,6 @@ $(document).ready(() => {
           type: "reset",
         })
       );
-      $("#cards").empty();
-      resetOwnCards();
-      countCards();
-    });
-
-    document.body.addEventListener("keypress", (event) => {
-      if (event.key && event.key === "R") {
-        $("#resetRow").toggleClass("reset-show");
-        $("#resetRow").toggleClass("reset-hide");
-        $("#users .kickBtn").each(function () {
-          $(this).toggleClass("reset-show");
-          $(this).toggleClass("reset-hide");
-        });
-      }
     });
   }
 });

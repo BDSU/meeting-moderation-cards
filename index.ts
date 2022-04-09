@@ -86,7 +86,7 @@ function getPropertyByPath(obj: object, path: string) {
 const oauthEnabled = !!process.env.OAUTH_CLIENT_ID;
 
 function checkAuth(req: express.Request, res: express.Response, next: express.NextFunction) {
-  if (req.body.name && !oauthEnabled) {
+  if (req.body.name && !oauthEnabled && !req.session.uid) {
     req.session.name = req.body.name;
     req.session.uid = generateId();
   }
@@ -245,8 +245,10 @@ let wss = new websocket.server({
 });
 
 interface Room {
+  id: string;
   connections: Connection[];
   cards: Card[];
+  hosts: string[];
 }
 
 interface Connection {
@@ -288,8 +290,10 @@ wss.on("request", async function (request) {
 
       if (!joinRooms[roomId]) {
         let newRoom = {
+          id: roomId,
           connections: [],
           cards: [],
+          hosts: []
         };
         let viewId = crypto.createHash('sha256').update(roomId).digest('hex');
         joinRooms[roomId] = newRoom;
@@ -315,21 +319,30 @@ wss.on("request", async function (request) {
     let data = JSON.parse(message.utf8Data);
     // console.log(`Inbound: ${message.utf8Data}`);
     let card: Card;
-    let msg: string;
+    let msg: string = undefined;
 
     switch (data.type) {
       case "join":
-        room.connections.push({name, connection, id, participate});
+        if (room.connections.length === 0 && room.hosts.length === 0) {
+          room.hosts.push(id);
+        }
+        room.connections.push({ name, connection, id, participate });
         let connectedMsg = JSON.stringify({
           type: "connected",
-          connected: room.connections.reduce((rv, cv) => {
-            if (cv.participate && !rv.find((item) => item.id == cv.id)) {
-              rv.push({name: cv.name, id: cv.id});
-            }
-            return rv;
-          }, []).map((item) => {
-            return {name: item.name, id: item.id};
-          }),
+          connected: room.connections
+            .reduce((rv, cv) => {
+              if (cv.participate && !rv.find((item) => item.id == cv.id)) {
+                rv.push({
+                  name: cv.name,
+                  id: cv.id,
+                  host: room.hosts.indexOf(cv.id) > -1,
+                });
+              }
+              return rv;
+            }, [])
+            .map((item) => {
+              return { name: item.name, id: item.id, host: item.host };
+            }),
         });
         if (participate) {
           msg = connectedMsg;
@@ -373,15 +386,82 @@ wss.on("request", async function (request) {
         }
         break;
       case "reset":
-        if (participate) {
+        if (participate && room.hosts.indexOf(id) > -1) {
           room.cards = [];
           msg = JSON.stringify({type: "reset"});
         }
         break;
       case "kick":
-        if (participate) {
-          room.connections.filter((conn) => conn.id == data.id)
-              .map((conn) => conn.connection.close());
+        if (participate && room.hosts.indexOf(id) > -1) {
+          room.connections
+            .filter((conn) => conn.id == data.id)
+            .map((conn) => conn.connection.close());
+        }
+        break;
+      case "promote":
+        if (room.hosts.indexOf(id) > -1) {
+          room.hosts.push(data.id);
+          let connectedMsg = JSON.stringify({
+            type: "connected",
+            connected: room.connections
+              .reduce((rv, cv) => {
+                if (cv.participate && !rv.find((item) => item.id == cv.id)) {
+                  rv.push({
+                    name: cv.name,
+                    id: cv.id,
+                    host: room.hosts.indexOf(cv.id) > -1,
+                  });
+                }
+                return rv;
+              }, [])
+              .map((item) => {
+                return { name: item.name, id: item.id, host: item.host };
+              }),
+          });
+          if (participate) {
+            msg = connectedMsg;
+          } else {
+            connection.send(connectedMsg);
+          }
+          connection.send(
+            JSON.stringify({
+              type: "all",
+              cards: room.cards,
+            })
+          );
+        }
+        break;
+      case "demote":
+        if (room.hosts.indexOf(id) > -1) {
+          room.hosts = room.hosts.filter((e) => e !== data.id);
+          let connectedMsg = JSON.stringify({
+            type: "connected",
+            connected: room.connections
+              .reduce((rv, cv) => {
+                if (cv.participate && !rv.find((item) => item.id == cv.id)) {
+                  rv.push({
+                    name: cv.name,
+                    id: cv.id,
+                    host: room.hosts.indexOf(cv.id) > -1,
+                  });
+                }
+                return rv;
+              }, [])
+              .map((item) => {
+                return { name: item.name, id: item.id, host: item.host };
+              }),
+          });
+          if (participate) {
+            msg = connectedMsg;
+          } else {
+            connection.send(connectedMsg);
+          }
+          connection.send(
+            JSON.stringify({
+              type: "all",
+              cards: room.cards,
+            })
+          );
         }
         break;
     }
@@ -420,16 +500,25 @@ wss.on("request", async function (request) {
                 type: "connected",
                 connected: room.connections.reduce((rv, cv) => {
                   if (cv.participate && !rv.find((item) => item.id == cv.id)) {
-                    rv.push({name: cv.name, id: cv.id});
+                    rv.push({
+                      name: cv.name,
+                      id: cv.id,
+                      host: room.hosts.indexOf(cv.id) > -1,
+                    });
                   }
                   return rv;
-                }, []).map((item) => {
-                  return {name: item.name, id: item.id};
+                }, [])
+                .map((item) => {
+                  return { name: item.name, id: item.id, host: item.host };
                 }),
               })
           );
         }
       });
+
+      if (room.connections.length === 0) {
+        joinRooms[room.id] = undefined;
+      }
     }
   });
 });
